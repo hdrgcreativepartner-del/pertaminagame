@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Booth Platform</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigasi -->
+    <nav class="navbar">
+        <div class="logo">EventGames</div>
+        <ul class="nav-links">
+            <li><a href="#" onclick="showPage('home')">Home</a></li>
+            <li><a href="#" onclick="showPage('scrabble')">Scrabble Word</a></li>
+            <li><a href="#" onclick="showPage('capture')">Capture Energy</a></li>
+            <li><a href="#" onclick="showPage('memory')">Memory Game</a></li>
+            <li><a href="#" onclick="showPage('leaderboard')">Leaderboard</a></li>
+        </ul>
+    </nav>
+
+    <!-- Halaman Home -->
+    <section id="home" class="page active">
+        <h1>Welcome</h1>
+        <p>Choose your game below</p>
+        <div class="game-menu">
+            <button onclick="showPage('scrabble')">Scrabble Word</button>
+            <button onclick="showPage('capture')">Capture Energy</button>
+            <button onclick="showPage('memory')">Memory Game</button>
+        </div>
+    </section>
+
+    <!-- Halaman Scrabble -->
+    <section id="scrabble" class="page">
+        <h2>Scrabble Word</h2>
+        <div class="stats">
+            <span>Score: <span id="scrabble-score">0</span></span>
+            <span>Time: <span id="scrabble-time">3:00</span></span>
+        </div>
+        <button onclick="startScrabble()">Start Game</button>
+        <div id="scrabble-board" class="game-area">Loading game...</div>
+    </section>
+
+    <!-- Halaman Capture Energy (Kamera) -->
+    <section id="capture" class="page">
+        <h2>Capture Energy (Head Catcher)</h2>
+        <p>Allow camera access to begin</p>
+        <div class="stats">
+            <span>Score: <span id="capture-score">0</span></span>
+            <span>Time: <span id="capture-time">1:00</span></span>
+        </div>
+        <button onclick="startCamera()">Start Camera & Game</button>
+        <div class="game-area">
+            <!-- Video feed akan muncul di sini -->
+            <video id="webcam" autoplay playsinline width="100%" height="auto" style="display:none;"></video>
+        </div>
+    </section>
+
+    <!-- Halaman Memory Game -->
+    <section id="memory" class="page">
+        <h2>Memory Game</h2>
+        <div class="stats">
+            <span>Score: <span id="memory-score">0</span></span>
+            <span>Moves: <span id="memory-moves">0</span></span>
+        </div>
+        <button onclick="startMemoryGame()">Start Game</button>
+        <div id="memory-board" class="game-area grid-board">Loading game...</div>
+    </section>
+
+    <!-- Halaman Leaderboard -->
+    <section id="leaderboard" class="page">
+        <h2>Leaderboard</h2>
+        <p>See the top players across all games!</p>
+        <div class="leaderboard-container">
+            <!-- Data Leaderboard Statis (Nantinya butuh Firebase untuk data dinamis) -->
+            <div class="board">
+                <h3>Scrabble Word</h3>
+                <ol>
+                    <li>Alex - 850</li>
+                    <li>Sarah - 720</li>
+                </ol>
+            </div>
+            <div class="board">
+                <h3>Capture Energy</h3>
+                <ol>
+                    <li>John - 920</li>
+                    <li>Emma - 880</li>
+                </ol>
+            </div>
+        </div>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+</html>
