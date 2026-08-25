@@ -1,4 +1,4 @@
-const ASSETS={brandName:'PERTAMINA GAS',capture:{items:['⚡','◉','✦','◆'],points:[10,15,20,30]},memory:['⚡','🔥','🛢️','🌱','💧','☀️','⚙️','⛽']};
+const ASSETS=window.EVENT_CONFIG||{brandName:'EVENT BOOTH',capture:{items:['⚡','◉','✦','◆'],points:[10,15,20,30]},memory:['⚡','🔥','🛢️','🌱','💧','☀️','⚙️','⛽']};
 let stream=null,faceMesh=null,currentGame=null;
 const $=id=>document.getElementById(id),pad=n=>String(n).padStart(4,'0');
 function player(){return ($('playerName').value||'PLAYER').trim().slice(0,18)}
