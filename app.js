@@ -1,54 +1,37 @@
-// Logika Routing Halaman SPA (Single Page Application)
-function showPage(pageId) {
-    // Sembunyikan semua halaman
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-    });
-    
-    // Tampilkan halaman yang dipilih
-    document.getElementById(pageId).classList.add('active');
-    
-    // Matikan kamera jika pindah dari halaman capture
-    if(pageId !== 'capture') {
-        stopCamera();
-    }
-}
-
-// Logika Placeholder untuk Scrabble
-function startScrabble() {
-    document.getElementById('scrabble-board').innerHTML = "<h3>Game Dimulai!</h3><p>Area papan Scrabble muncul di sini.</p>";
-}
-
-// Logika Akses Kamera untuk Capture Energy
-let streamRef = null;
-
-async function startCamera() {
-    const video = document.getElementById('webcam');
-    const gameArea = document.querySelector('#capture .game-area');
-    
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
-        video.style.display = 'block';
-        streamRef = stream;
-        
-        // Catatan: Untuk "Head Catcher", Anda butuh library seperti MediaPipe atau clmtrackr
-        gameArea.innerHTML += "<p>Kamera aktif! Butuh library AI tracking (misal: MediaPipe) untuk membaca pergerakan kepala.</p>";
-    } catch (err) {
-        alert("Akses kamera ditolak atau tidak tersedia.");
-        console.error(err);
-    }
-}
-
-function stopCamera() {
-    if (streamRef) {
-        streamRef.getTracks().forEach(track => track.stop());
-        document.getElementById('webcam').style.display = 'none';
-        streamRef = null;
-    }
-}
-
-// Logika Placeholder untuk Memory Game
-function startMemoryGame() {
-    document.getElementById('memory-board').innerHTML = "<h3>Game Dimulai!</h3><p>Kartu-kartu memory muncul di sini.</p>";
-}
+const ASSETS=window.EVENT_CONFIG||{brandName:'EVENT BOOTH',capture:{items:['⚡','◉','✦','◆'],points:[10,15,20,30]},memory:['⚡','🔥','🛢️','🌱','💧','☀️','⚙️','⛽']};
+let stream=null,faceMesh=null,currentGame=null;
+const $=id=>document.getElementById(id),pad=n=>String(n).padStart(4,'0');
+function player(){return ($('playerName').value||'PLAYER').trim().slice(0,18)}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$(id).classList.add('active');if(id!=='capture')stopCamera();if(id==='leaderboard')renderLeaderboard()}
+function startGame(id){currentGame=id;id==='capture'?resetCapture():id==='word'?resetWord():resetMemory();showPage(id)}
+function backHome(){stopCamera();showPage('home')}
+function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()}
+let capture={score:0,time:30,combo:1,running:false,objects:[],raf:0};
+function resetCapture(){$('captureScore').textContent='0000';$('captureTime').textContent='30';$('captureCombo').textContent='x1';$('cameraPrompt').classList.remove('hidden');$('captureResult').classList.add('hidden');capture={score:0,time:30,combo:1,running:false,objects:[],raf:0}}
+async function enableCamera(){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});$('webcam').srcObject=stream;$('webcam').play();$('cameraPrompt').classList.add('hidden');await countdown(3);startCaptureRound()}catch(e){alert('Kamera tidak dapat digunakan. Pastikan permission kamera diberikan dan halaman dibuka melalui HTTPS.')}}
+function countdown(n){return new Promise(resolve=>{let i=n;const tick=()=>{if(i===0){$('captureCountdown').textContent='';resolve();return}$('captureCountdown').textContent=i--;setTimeout(tick,800)};tick()})}
+function initFaceMesh(){if(faceMesh||!window.FaceMesh)return;faceMesh=new FaceMesh({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`});faceMesh.setOptions({maxNumFaces:1,refineLandmarks:false,minDetectionConfidence:.5,minTrackingConfidence:.5});faceMesh.onResults(onFaceResults)}
+function startCaptureRound(){capture.running=true;initFaceMesh();if(faceMesh)processCamera();let t=setInterval(()=>{if(!capture.running){clearInterval(t);return}capture.time--;$('captureTime').textContent=capture.time;if(capture.time<=0){clearInterval(t);endCapture()}},1000);captureLoop()}
+async function processCamera(){if(!stream||!faceMesh||!capture.running)return;try{await faceMesh.send({image:$('webcam')})}catch(e){}if(capture.running)requestAnimationFrame(processCamera)}
+function onFaceResults(res){if(!capture.running||!res.multiFaceLandmarks?.length)return;const lm=res.multiFaceLandmarks[0][1],c=$('captureCanvas'),x=(1-lm.x)*c.clientWidth,y=lm.y*c.clientHeight;for(let i=capture.objects.length-1;i>=0;i--){const o=capture.objects[i];if(Math.hypot(o.x-x,o.y-y)<o.r+55){capture.score+=o.points*capture.combo;capture.combo=Math.min(8,capture.combo+1);capture.objects.splice(i,1);$('captureScore').textContent=pad(capture.score);$('captureCombo').textContent='x'+capture.combo}}}
+function spawnEnergy(w){let i=Math.floor(Math.random()*ASSETS.capture.items.length);capture.objects.push({x:30+Math.random()*(w-60),y:-40,r:32,vy:2.5+Math.random()*3,points:ASSETS.capture.points[i],asset:ASSETS.capture.items[i]})}
+function captureLoop(){if(!capture.running)return;const c=$('captureCanvas'),ctx=c.getContext('2d');c.width=c.clientWidth*devicePixelRatio;c.height=c.clientHeight*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);const w=c.clientWidth,h=c.clientHeight;ctx.clearRect(0,0,w,h);if(Math.random()<.035)spawnEnergy(w);capture.objects.forEach(o=>{o.y+=o.vy;ctx.beginPath();ctx.arc(o.x,o.y,o.r+9,0,Math.PI*2);ctx.fillStyle='rgba(183,232,59,.12)';ctx.fill();ctx.font='40px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(o.asset,o.x,o.y)});capture.objects=capture.objects.filter(o=>o.y<h+60);capture.raf=requestAnimationFrame(captureLoop)}
+function endCapture(){capture.running=false;cancelAnimationFrame(capture.raf);$('captureResultScore').textContent=pad(capture.score);$('captureResultText').textContent=capture.score>250?'POWER PLAYER!':'Good run — try to beat your score.';saveScore('Capture Energy',capture.score);$('captureResult').classList.remove('hidden')}
+function restartCapture(){stopCamera();resetCapture();enableCamera()}
+function stopCamera(){capture.running=false;cancelAnimationFrame(capture.raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}if($('webcam'))$('webcam').srcObject=null}
+const WORDS=['ENERGI','GAS','PANAS','BUMI','API','DAYA','HIJAU','POWER','NETZERO'];let word={};
+function resetWord(){$('wordScore').textContent='0000';$('wordTime').textContent='30';$('wordLetters').innerHTML='';$('wordAnswer').innerHTML='';$('wordFeedback').textContent='';$('wordStart').style.display='inline-block'}
+function startWord(){clearInterval(word.timer);word={score:0,time:30,answer:[],target:WORDS[Math.floor(Math.random()*WORDS.length)]};word.letters=word.target.split('').sort(()=>Math.random()-.5);$('wordStart').style.display='none';renderLetters();word.timer=setInterval(()=>{word.time--;$('wordTime').textContent=word.time;if(word.time<=0)finishWord(false)},1000)}
+function renderLetters(){$('wordLetters').innerHTML=word.letters.map((l,i)=>`<button class="letter" onclick="pickLetter(${i})" ${word.answer.includes(i)?'disabled':''}>${l}</button>`).join('');$('wordAnswer').innerHTML=word.answer.map(i=>`<span class="letter">${word.letters[i]}</span>`).join('')}
+function pickLetter(i){if(word.answer.includes(i))return;word.answer.push(i);renderLetters();if(word.answer.length===word.target.length)finishWord(word.answer.map(i=>word.letters[i]).join('')===word.target)}
+function finishWord(correct){clearInterval(word.timer);word.score=correct?100+word.time*5:0;$('wordScore').textContent=pad(word.score);$('wordFeedback').textContent=correct?'CORRECT — ENERGY FOUND!':'TIME UP — target: '+word.target;if(correct)saveScore('Energy Words',word.score)}
+let memory={};
+function resetMemory(){$('memoryBoard').innerHTML='';$('memoryMoves').textContent='00';$('memoryMatches').textContent='0';$('memoryTime').textContent='45';$('memoryStart').style.display='inline-block'}
+function startMemory(){clearInterval(memory.timer);memory={cards:[...ASSETS.memory,...ASSETS.memory].sort(()=>Math.random()-.5),first:null,lock:false,moves:0,matches:0,time:45};$('memoryStart').style.display='none';$('memoryBoard').innerHTML=memory.cards.map((v,i)=>`<button class="memory-card-btn" data-i="${i}" onclick="flipCard(${i})">?</button>`).join('');memory.timer=setInterval(()=>{memory.time--;$('memoryTime').textContent=memory.time;if(memory.time<=0)finishMemory()},1000)}
+function flipCard(i){if(memory.lock)return;let el=document.querySelector(`[data-i="${i}"]`);if(el.classList.contains('flipped')||el.classList.contains('matched'))return;el.textContent=memory.cards[i];el.classList.add('flipped');if(memory.first===null){memory.first=i;return}let j=memory.first;memory.first=null;memory.moves++;$('memoryMoves').textContent=String(memory.moves).padStart(2,'0');if(memory.cards[i]===memory.cards[j]){document.querySelector(`[data-i="${i}"]`).classList.add('matched');document.querySelector(`[data-i="${j}"]`).classList.add('matched');memory.matches++;$('memoryMatches').textContent=memory.matches;if(memory.matches===8)finishMemory()}else{memory.lock=true;setTimeout(()=>{[i,j].forEach(k=>{let e=document.querySelector(`[data-i="${k}"]`);e.classList.remove('flipped');e.textContent='?'});memory.lock=false},650)}}
+function finishMemory(){clearInterval(memory.timer);const score=Math.max(0,memory.matches*100+memory.time*3-Math.max(0,memory.moves-8)*5);saveScore('Energy Memory',score);setTimeout(()=>alert(`Round selesai! Skor: ${score}`),200)}
+function saveScore(game,score){if(!score)return;const key='energyExperienceScores',list=JSON.parse(localStorage.getItem(key)||'[]');list.push({name:player(),game,score:Number(score),date:new Date().toISOString()});list.sort((a,b)=>b.score-a.score);localStorage.setItem(key,JSON.stringify(list.slice(0,20)))}
+function renderLeaderboard(){const list=JSON.parse(localStorage.getItem('energyExperienceScores')||'[]');$('leaderboardList').innerHTML=list.length?list.slice(0,10).map((x,i)=>`<div class="rank"><span class="num">${String(i+1).padStart(2,'0')}</span><div><span class="name">${escapeHtml(x.name)}</span><span class="game">${escapeHtml(x.game)}</span></div><span class="points">${x.score}</span></div>`).join(''):'<p class="muted">Belum ada skor. Jadilah pemain pertama!</p>'}
+function clearLeaderboard(){if(confirm('Hapus semua skor lokal?')){localStorage.removeItem('energyExperienceScores');renderLeaderboard()}}
+function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+$('brandName').textContent=ASSETS.brandName;
