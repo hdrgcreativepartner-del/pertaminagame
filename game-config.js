@@ -1,12 +1,12 @@
-/* PERTAMINA EVENT CONFIG — seluruh asset mengikuti folder /asset/. */
 window.EVENT_CONFIG={
-  brandName:'PERTAMINA GAS',
-  eventLabel:'ENERGY EXPERIENCE',
-  splash:{asset:'asset/Pertamina Logo.png',duration:2600},
+  brandName:'PERTAMINA PATRA NIAGA',
+  eventLabel:'ENERGIZING YOUR JOURNEY',
+  palette:{black:'#0B0A08',red:'#D6191F',blue:'#0070BA',lime:'#BBD760',gray:'#BBBBBB',white:'#FFFFFF'},
+  splash:{asset:'asset/Pertamina Logo.png',duration:2200},
+  auth:{user:'89 pro',pin:'1945'},
   capture:{
     duration:45,
-    roadSpeed:3.6,
-    spawnEvery:680,
+    spawnEvery:820,
     truckAsset:'asset/Truck Tanki.png',
     fuel:[
       {src:'asset/pertalite-card.png',label:'PERTALITE',points:10},
@@ -25,9 +25,15 @@ window.EVENT_CONFIG={
       {src:'asset/non-fuel-3.png',label:'NON-FUEL',points:-30}
     ]
   },
+  wordSearch:{
+    size:12,
+    duration:120,
+    maxWords:6,
+    defaultWords:['DISTRIBUTOR','BRIGHTSTORE','FASTRON','RETAIL','MITRA','PERTAMINA','ENERGI','PATRA','NIAGA']
+  },
   memory:[
     'asset/pertalite-card.png','asset/pertamax-card.png','asset/turbo-card.png','asset/pertamax-95-card.png',
     'asset/dex-card.png','asset/dexlite-card.png','asset/biosolar-card.png','asset/lpg-2.png'
   ],
-  words:['ENERGI','GAS','PANAS','BUMI','API','DAYA','HIJAU','POWER','NETZERO']
+  memoryBack:'asset/Pertamina Logo.png'
 };
