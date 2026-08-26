@@ -1,30 +1,33 @@
-/* PERTAMINA EVENT CONFIG — ganti asset di folder /assets/ tanpa menyentuh game engine. */
+/* PERTAMINA EVENT CONFIG — seluruh asset mengikuti folder /asset/. */
 window.EVENT_CONFIG={
   brandName:'PERTAMINA GAS',
   eventLabel:'ENERGY EXPERIENCE',
-  splash:{asset:'assets/patra-niaga-splash.svg',duration:2600},
+  splash:{asset:'asset/Pertamina Logo.png',duration:2600},
   capture:{
     duration:45,
     roadSpeed:3.6,
     spawnEvery:680,
-    truckAsset:'assets/truck-tanki.svg',
+    truckAsset:'asset/Truck Tanki.png',
     fuel:[
-      {src:'assets/pertalite-card.svg',label:'PERTALITE',points:10},
-      {src:'assets/pertamax-card.svg',label:'PERTAMAX',points:15},
-      {src:'assets/turbo-card.svg',label:'PERTAMAX TURBO',points:20},
-      {src:'assets/pertamax-95-card.svg',label:'PERTAMAX GREEN 95',points:25},
-      {src:'assets/dex-card.svg',label:'DEX',points:18},
-      {src:'assets/dexlite-card.svg',label:'DEXLITE',points:16},
-      {src:'assets/biosolar-card.svg',label:'BIOSOLAR',points:12},
-      {src:'assets/lpg-2.svg',label:'LPG',points:22}
+      {src:'asset/pertalite-card.png',label:'PERTALITE',points:10},
+      {src:'asset/pertamax-card.png',label:'PERTAMAX',points:15},
+      {src:'asset/turbo-card.png',label:'PERTAMAX TURBO',points:20},
+      {src:'asset/pertamax-95-card.png',label:'PERTAMAX GREEN 95',points:25},
+      {src:'asset/dex-card.png',label:'DEX',points:18},
+      {src:'asset/dexlite-card.png',label:'DEXLITE',points:16},
+      {src:'asset/biosolar-card.png',label:'BIOSOLAR',points:12},
+      {src:'asset/lpg-2.png',label:'LPG',points:22}
     ],
     nonFuel:[
-      {src:'assets/non-fuel.svg',label:'NON-FUEL',points:-15},
-      {src:'assets/non-fuel-1.svg',label:'NON-FUEL',points:-20},
-      {src:'assets/non-fuel-2.svg',label:'NON-FUEL',points:-25},
-      {src:'assets/non-fuel-3.svg',label:'NON-FUEL',points:-30}
+      {src:'asset/non-fuel.png',label:'NON-FUEL',points:-15},
+      {src:'asset/non-fuel-1.png',label:'NON-FUEL',points:-20},
+      {src:'asset/non-fuel-2.png',label:'NON-FUEL',points:-25},
+      {src:'asset/non-fuel-3.png',label:'NON-FUEL',points:-30}
     ]
   },
-  memory:['⚡','🔥','🛢️','🌱','💧','☀️','⚙️','⛽'],
+  memory:[
+    'asset/pertalite-card.png','asset/pertamax-card.png','asset/turbo-card.png','asset/pertamax-95-card.png',
+    'asset/dex-card.png','asset/dexlite-card.png','asset/biosolar-card.png','asset/lpg-2.png'
+  ],
   words:['ENERGI','GAS','PANAS','BUMI','API','DAYA','HIJAU','POWER','NETZERO']
 };
