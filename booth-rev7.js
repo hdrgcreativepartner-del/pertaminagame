@@ -92,7 +92,31 @@
     finishMemory=wrapped;
   }
 
-  function install(){installWordResult();installMemoryResult();}
+  function installCaptureResultName(){
+    if(typeof endCapture!=='function'||endCapture.__rev8Wrapped)return;
+    const original=endCapture;
+    const wrapped=async function(...args){
+      const name=playerName();
+      const result=await original.apply(this,args);
+      const modal=document.getElementById('captureResult');
+      if(modal){
+        let player=modal.querySelector('.capture-result-player');
+        if(!player){
+          player=document.createElement('p');
+          player.className='capture-result-player';
+          const score=modal.querySelector('#captureResultScore');
+          if(score)modal.insertBefore(player,score);
+          else modal.prepend(player);
+        }
+        player.textContent=name;
+      }
+      return result;
+    };
+    wrapped.__rev8Wrapped=true;
+    endCapture=wrapped;
+  }
+
+  function install(){installWordResult();installMemoryResult();installCaptureResultName();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
   setTimeout(install,250);setTimeout(install,900);
 })();
