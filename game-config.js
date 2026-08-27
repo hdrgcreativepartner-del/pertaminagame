@@ -41,3 +41,16 @@ window.EVENT_CONFIG={
     ]
   }
 };
+
+(()=>{
+  const version='20260827-4';
+  const style=document.createElement('link');
+  style.rel='stylesheet';
+  style.href=`splash-tech.css?v=${version}`;
+  document.head.appendChild(style);
+
+  const loginFix=document.createElement('script');
+  loginFix.src=`login-fix.js?v=${version}`;
+  loginFix.async=false;
+  document.head.appendChild(loginFix);
+})();
