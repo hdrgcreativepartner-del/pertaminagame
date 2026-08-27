@@ -1,0 +1,78 @@
+/* REV 5 — bright energy splash + static feature labels + truck-only motion */
+
+/* Bright clean energy splash */
+#splash.splash{
+  background:
+    radial-gradient(circle at 50% 45%,rgba(0,112,186,.06),transparent 24%),
+    linear-gradient(180deg,#ffffff 0%,#fbfcfd 100%);
+  isolation:isolate;
+}
+#splash.splash::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.36;
+  background-image:linear-gradient(rgba(0,112,186,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(0,112,186,.045) 1px,transparent 1px);
+  background-size:46px 46px;
+  mask-image:linear-gradient(to bottom,transparent 4%,#000 28%,#000 72%,transparent 96%);
+}
+#splash.splash::after{
+  content:"";position:absolute;left:-18%;right:-18%;top:50%;height:2px;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,transparent 0 10%,rgba(187,215,96,.12) 22%,#BBD760 50%,rgba(187,215,96,.12) 78%,transparent 90%);
+  box-shadow:0 0 18px rgba(187,215,96,.2);
+  animation:greenEnergy 2.8s ease-in-out infinite;
+}
+#splash .splash-logo{
+  z-index:5;width:min(450px,68vw);max-height:155px;padding:0;background:transparent;border-radius:0;
+  box-shadow:none;filter:drop-shadow(0 18px 38px rgba(14,38,70,.10));
+  opacity:0;transform:scale(.965);animation:brightLogo .9s cubic-bezier(.22,.61,.36,1) .12s forwards;
+}
+#splash .splash-accent{display:block;position:absolute;height:2px;border-radius:999px;filter:none;opacity:1;pointer-events:none;background:transparent!important}
+#splash .accent-red{
+  width:72vw;left:-12vw;top:34%;border:0;
+  background:linear-gradient(90deg,transparent,#D6191F 28%,rgba(214,25,31,.16) 66%,transparent)!important;
+  box-shadow:0 0 16px rgba(214,25,31,.16);transform:rotate(-4deg);
+  animation:redEnergy 2.5s ease-in-out infinite;
+}
+#splash .accent-blue{
+  width:76vw;right:-16vw;left:auto;top:66%;border:0;
+  background:linear-gradient(90deg,transparent,rgba(0,112,186,.14) 22%,#0070BA 62%,transparent)!important;
+  box-shadow:0 0 16px rgba(0,112,186,.16);transform:rotate(4deg);
+  animation:blueEnergy 3s ease-in-out infinite;
+}
+#splash .splash-loader{z-index:4;bottom:10%;width:min(180px,36vw);height:2px;background:#eef1f4;box-shadow:none}
+#splash .splash-loader i{background:linear-gradient(90deg,#D6191F,#0070BA,#BBD760);box-shadow:none}
+@keyframes brightLogo{0%{opacity:0;transform:scale(.965);filter:blur(5px)}100%{opacity:1;transform:scale(1);filter:drop-shadow(0 18px 38px rgba(14,38,70,.10))}}
+@keyframes redEnergy{0%,100%{transform:translateX(-5%) rotate(-4deg);opacity:.55}50%{transform:translateX(22%) rotate(-4deg);opacity:1}}
+@keyframes blueEnergy{0%,100%{transform:translateX(6%) rotate(4deg);opacity:.55}50%{transform:translateX(-20%) rotate(4deg);opacity:1}}
+@keyframes greenEnergy{0%,100%{transform:scaleX(.35);opacity:.24}50%{transform:scaleX(1);opacity:.86}}
+
+/* Landing: labels remain still; only truck moves */
+.hero-rotor{animation:none!important;transform:none!important}
+.hero-ring{animation:none!important}
+.hero-truck{
+  animation:truckOnlyMotion 5.2s cubic-bezier(.45,.05,.55,.95) infinite!important;
+  transform:translate(-50%,-50%);
+}
+.orbit-label{width:auto!important;height:auto!important;transform:none!important;z-index:7}
+.orbit-label span{position:relative!important;display:block;transform:none!important;animation:none!important;rotate:0deg!important}
+.label-one{left:9%!important;top:18%!important}
+.label-two{left:auto!important;right:4%!important;top:35%!important}
+.label-three{left:18%!important;top:auto!important;bottom:14%!important}
+@keyframes truckOnlyMotion{
+  0%,100%{transform:translate(-50%,-50%) translate3d(-12px,3px,0) rotate(-.7deg)}
+  25%{transform:translate(-50%,-50%) translate3d(2px,-7px,0) rotate(.25deg)}
+  50%{transform:translate(-50%,-50%) translate3d(14px,1px,0) rotate(.7deg)}
+  75%{transform:translate(-50%,-50%) translate3d(0,7px,0) rotate(-.2deg)}
+}
+
+@media(max-width:900px){
+  .label-one{left:6%!important;top:15%!important}.label-two{right:2%!important;top:36%!important}.label-three{left:12%!important;bottom:12%!important}
+}
+@media(max-width:600px){
+  #splash .splash-logo{width:min(330px,70vw)}
+  #splash .accent-red{width:92vw;left:-28vw;top:36%}
+  #splash .accent-blue{width:96vw;right:-30vw;top:64%}
+  .orbit-label span{font-size:7px!important;padding:8px 10px!important}
+  .label-one{left:4%!important;top:14%!important}.label-two{right:1%!important;top:38%!important}.label-three{left:8%!important;bottom:10%!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #splash .accent-red,#splash .accent-blue,#splash.splash::after,.hero-truck{animation:none!important}
+}
