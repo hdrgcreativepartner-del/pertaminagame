@@ -41,19 +41,31 @@ window.EVENT_CONFIG={
 
 /* Runtime revision loader, versioned to bypass stale GitHub Pages cache. */
 (()=>{
-  const version='20260827-r6';
-  const css=document.createElement('link');
-  css.rel='stylesheet';
-  css.href=`booth-rev5.css?v=${version}`;
-  document.head.appendChild(css);
+  const version='20260827-r7';
+  ['booth-rev5.css','booth-rev7.css'].forEach(file=>{
+    const css=document.createElement('link');
+    css.rel='stylesheet';
+    css.href=`${file}?v=${version}`;
+    document.head.appendChild(css);
+  });
 
-  const loadPatch=()=>{
-    if(document.querySelector('script[data-booth-rev5]')) return;
-    const script=document.createElement('script');
-    script.src=`booth-rev5.js?v=${version}`;
-    script.dataset.boothRev5='1';
-    document.body.appendChild(script);
+  const loadRev7=()=>{
+    if(document.querySelector('script[data-booth-rev7]'))return;
+    const rev7=document.createElement('script');
+    rev7.src=`booth-rev7.js?v=${version}`;
+    rev7.dataset.boothRev7='1';
+    document.body.appendChild(rev7);
   };
-  if(document.readyState==='complete') setTimeout(loadPatch,0);
-  else window.addEventListener('load',loadPatch,{once:true});
+
+  const loadPatches=()=>{
+    if(document.querySelector('script[data-booth-rev5]')){loadRev7();return;}
+    const rev5=document.createElement('script');
+    rev5.src=`booth-rev5.js?v=${version}`;
+    rev5.dataset.boothRev5='1';
+    rev5.onload=loadRev7;
+    document.body.appendChild(rev5);
+  };
+
+  if(document.readyState==='complete')setTimeout(loadPatches,0);
+  else window.addEventListener('load',loadPatches,{once:true});
 })();
