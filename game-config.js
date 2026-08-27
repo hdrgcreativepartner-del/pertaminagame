@@ -41,7 +41,7 @@ window.EVENT_CONFIG={
 
 /* Runtime revision loader, versioned to bypass stale GitHub Pages cache. */
 (()=>{
-  const version='20260827-r5';
+  const version='20260827-r6';
   const css=document.createElement('link');
   css.rel='stylesheet';
   css.href=`booth-rev5.css?v=${version}`;
