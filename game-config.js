@@ -32,25 +32,28 @@ window.EVENT_CONFIG={
     maxWords:6,
     defaultWords:['DISTRIBUTOR','BRIGHTSTORE','FASTRON','RETAIL','MITRA','PERTAMINA','ENERGI','PATRA','NIAGA']
   },
-  memory:{
-    duration:60,
-    backAsset:'asset/Pertamina Logo.png',
-    assets:[
-      'asset/pertalite-card.png','asset/pertamax-card.png','asset/turbo-card.png','asset/pertamax-95-card.png',
-      'asset/dex-card.png','asset/dexlite-card.png','asset/biosolar-card.png','asset/lpg-2.png'
-    ]
-  }
+  memory:[
+    'asset/pertalite-card.png','asset/pertamax-card.png','asset/turbo-card.png','asset/pertamax-95-card.png',
+    'asset/dex-card.png','asset/dexlite-card.png','asset/biosolar-card.png','asset/lpg-2.png'
+  ],
+  memoryBack:'asset/Pertamina Logo.png'
 };
 
+/* Runtime revision loader, versioned to bypass stale GitHub Pages cache. */
 (()=>{
-  const version='20260827-4';
-  const style=document.createElement('link');
-  style.rel='stylesheet';
-  style.href=`splash-tech.css?v=${version}`;
-  document.head.appendChild(style);
+  const version='20260827-r5';
+  const css=document.createElement('link');
+  css.rel='stylesheet';
+  css.href=`booth-rev5.css?v=${version}`;
+  document.head.appendChild(css);
 
-  const loginFix=document.createElement('script');
-  loginFix.src=`login-fix.js?v=${version}`;
-  loginFix.async=false;
-  document.head.appendChild(loginFix);
+  const loadPatch=()=>{
+    if(document.querySelector('script[data-booth-rev5]')) return;
+    const script=document.createElement('script');
+    script.src=`booth-rev5.js?v=${version}`;
+    script.dataset.boothRev5='1';
+    document.body.appendChild(script);
+  };
+  if(document.readyState==='complete') setTimeout(loadPatch,0);
+  else window.addEventListener('load',loadPatch,{once:true});
 })();
