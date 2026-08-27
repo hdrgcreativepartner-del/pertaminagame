@@ -1,0 +1,55 @@
+/* REV 7 — result popups + clockwise 360 truck orbit */
+
+/* Landing: feature labels stay still; truck moves clockwise around the center */
+.hero-rotor{animation:none!important;transform:none!important}
+.hero-ring{animation:none!important}
+.orbit-label,.orbit-label span{animation:none!important;transform:none!important;rotate:0deg!important}
+.hero-truck{
+  --truck-orbit-radius:clamp(30px,4.2vw,62px);
+  animation:truckClockOrbit 9.5s linear infinite!important;
+  transform-origin:50% 50%!important;
+  will-change:transform;
+}
+@keyframes truckClockOrbit{
+  0%{transform:translate(-50%,-50%) rotate(0deg) translateX(var(--truck-orbit-radius)) rotate(0deg)}
+  25%{transform:translate(-50%,-50%) rotate(90deg) translateX(var(--truck-orbit-radius)) rotate(-90deg)}
+  50%{transform:translate(-50%,-50%) rotate(180deg) translateX(var(--truck-orbit-radius)) rotate(-180deg)}
+  75%{transform:translate(-50%,-50%) rotate(270deg) translateX(var(--truck-orbit-radius)) rotate(-270deg)}
+  100%{transform:translate(-50%,-50%) rotate(360deg) translateX(var(--truck-orbit-radius)) rotate(-360deg)}
+}
+
+/* Shared result popup */
+.booth-result-overlay{
+  position:fixed;z-index:9000;inset:0;display:grid;place-items:center;padding:24px;
+  background:rgba(7,14,24,.62);backdrop-filter:blur(12px);
+  opacity:0;visibility:hidden;transition:opacity .28s cubic-bezier(.22,.61,.36,1),visibility .28s;
+}
+.booth-result-overlay.show{opacity:1;visibility:visible}
+.booth-result-card{
+  position:relative;width:min(520px,94vw);overflow:hidden;border-radius:22px;background:#fff;color:#101827;
+  box-shadow:0 35px 100px rgba(3,12,24,.34);padding:30px;
+  transform:translateY(18px) scale(.97);opacity:0;
+  transition:transform .36s cubic-bezier(.22,.61,.36,1),opacity .3s ease;
+}
+.booth-result-overlay.show .booth-result-card{transform:none;opacity:1}
+.booth-result-card:before{content:"";position:absolute;left:0;top:0;right:0;height:5px;background:linear-gradient(90deg,#D6191F 0 33%,#0070BA 33% 66%,#BBD760 66%)}
+.booth-result-close{position:absolute;right:15px;top:15px;width:36px;height:36px;border:1px solid #e2e6eb;border-radius:50%;background:#f8f9fa;color:#5d6671;font-size:22px;line-height:1}
+.booth-result-brand{height:44px;margin-bottom:22px}.booth-result-brand img{width:132px;height:44px;object-fit:contain;object-position:left center}
+.booth-result-kicker{display:block;color:#0070BA;font-size:9px;font-weight:800;letter-spacing:.18em}
+.booth-result-card h2{margin:8px 0 3px;font-family:'Barlow Condensed',sans-serif;font-size:clamp(45px,8vw,66px);line-height:.9;letter-spacing:-.035em;color:#0c2348}
+.booth-result-player{margin:0 0 22px;color:#D6191F;font-size:15px;font-weight:800;letter-spacing:.02em}
+.booth-result-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 24px}
+.booth-result-stats>div{padding:18px;border:1px solid #e1e5ea;border-radius:12px;background:#f8f9fb}
+.booth-result-stats span{display:block;margin-bottom:5px;color:#76808c;font-size:8px;font-weight:800;letter-spacing:.14em}
+.booth-result-stats b{font-family:'Barlow Condensed',sans-serif;font-size:40px;line-height:1;color:#0c2348}
+.booth-result-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.booth-result-actions button{height:48px;border-radius:9px;font-size:9px;font-weight:800;letter-spacing:.08em}
+.booth-result-primary{border:0;background:#0070BA;color:#fff}.booth-result-secondary{border:1px solid #cfd5dc;background:#fff;color:#27313d}
+.booth-result-primary:hover{background:#005f9f}.booth-result-secondary:hover{background:#f5f7f9}
+
+@media(max-width:600px){
+  .hero-truck{--truck-orbit-radius:clamp(22px,8vw,42px)}
+  .booth-result-overlay{padding:14px}.booth-result-card{padding:24px 18px 18px;border-radius:18px}
+  .booth-result-stats>div{padding:14px}.booth-result-stats b{font-size:34px}.booth-result-actions{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){.hero-truck{animation:none!important}.booth-result-card{transition:none}}
