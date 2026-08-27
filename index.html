@@ -12,11 +12,11 @@
   <link rel="stylesheet" href="style-v3.css">
 </head>
 <body>
-  <div id="splash" class="splash">
-    <div class="splash-beam beam-red"></div>
-    <div class="splash-beam beam-blue"></div>
+  <div id="splash" class="splash" aria-label="Loading Pertamina Patra Niaga experience">
+    <div class="splash-accent splash-red"></div>
+    <div class="splash-accent splash-blue"></div>
     <div class="splash-brand">
-      <img src="asset/Pertamina Logo.png" alt="Pertamina Patra Niaga">
+      <div class="splash-logo-wrap"><img src="asset/Pertamina Logo.png" alt="Pertamina Patra Niaga"></div>
       <span>PERTAMINA PATRA NIAGA</span>
       <small>ENERGIZING YOUR JOURNEY</small>
     </div>
@@ -25,16 +25,14 @@
 
   <section id="loginScreen" class="login-screen hidden">
     <div class="login-panel">
-      <div class="login-brand">
+      <div class="login-visual">
         <img src="asset/Pertamina Logo.png" alt="Pertamina Patra Niaga">
-        <div><b>PERTAMINA PATRA NIAGA</b><span>EVENT BOOTH ACCESS</span></div>
-      </div>
-      <div class="login-copy">
-        <span class="kicker">OPERATOR ACCESS</span>
-        <h1>WELCOME<br>TO THE <em>EXPERIENCE.</em></h1>
-        <p>Masuk untuk mengaktifkan permainan, mengelola word bank, dan mengunduh data peserta.</p>
+        <span class="kicker light">EVENT BOOTH EXPERIENCE</span>
+        <h1>ENERGIZING<br><em>YOUR JOURNEY.</em></h1>
+        <p>Interactive games, live scores, and participant data in one booth experience.</p>
       </div>
       <form id="loginForm" class="login-form" autocomplete="off">
+        <div class="form-title"><span>OPERATOR ACCESS</span><b>Sign in to booth</b></div>
         <label>USER<input id="loginUser" type="text" autocomplete="username" placeholder="Operator user"></label>
         <label>PIN<input id="loginPin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••"></label>
         <button class="primary-btn" type="submit">ENTER BOOTH <span>→</span></button>
@@ -50,11 +48,11 @@
         <span><b>PERTAMINA PATRA NIAGA</b><small>ENERGIZING YOUR JOURNEY</small></span>
       </button>
       <nav class="nav-tabs" aria-label="Game navigation">
-        <button data-page="home" onclick="showPage('home')">⌂ <span>Home</span></button>
-        <button data-page="word" onclick="openGame('word')">⌕ <span>Energy Word</span></button>
-        <button data-page="capture" onclick="openGame('capture')">◉ <span>Capture Energy</span></button>
-        <button data-page="memory" onclick="openGame('memory')">▦ <span>Energy Memory</span></button>
-        <button data-page="leaderboard" onclick="showPage('leaderboard')">♛ <span>Leaderboard</span></button>
+        <button data-page="home" onclick="showPage('home')"><i>⌂</i><span>Home</span></button>
+        <button data-page="word" onclick="openGame('word')"><i>⌕</i><span>Energy Word</span></button>
+        <button data-page="capture" onclick="openGame('capture')"><i>◉</i><span>Capture Energy</span></button>
+        <button data-page="memory" onclick="openGame('memory')"><i>▦</i><span>Energy Memory</span></button>
+        <button data-page="leaderboard" onclick="showPage('leaderboard')"><i>♛</i><span>Leaderboard</span></button>
       </nav>
       <div class="header-actions">
         <button class="header-btn" onclick="exportPlayerData()" title="Download Excel">XLSX</button>
@@ -65,26 +63,30 @@
 
     <main>
       <section id="home" class="page active">
-        <div class="home-bg-shape shape-red"></div><div class="home-bg-shape shape-blue"></div>
         <div class="home-shell">
           <div class="home-copy">
             <span class="kicker light">PERTAMINA PATRA NIAGA • EVENT ACTIVATION</span>
             <h1>ENERGIZING<br><em>YOUR JOURNEY.</em></h1>
-            <p>Masukkan data player, pilih permainan, lalu raih skor tertinggi dalam pengalaman interaktif Pertamina Patra Niaga.</p>
+            <p>Daftarkan player, pilih game, dan nikmati pengalaman interaktif Pertamina Patra Niaga.</p>
             <div class="player-form-card">
               <div class="form-heading"><div><span>PLAYER REGISTRATION</span><b>Siapa yang bermain?</b></div><button class="text-btn" onclick="newPlayer()">NEW PLAYER</button></div>
-              <div class="player-fields">
+              <div class="player-fields compact-player-fields">
                 <label>NAME<input id="playerName" maxlength="40" placeholder="Nama player"></label>
-                <label>SOCIAL MEDIA<input id="playerSocial" maxlength="80" placeholder="@username / akun sosial"></label>
-                <label>EMAIL<input id="playerEmail" type="email" maxlength="100" placeholder="nama@email.com"></label>
-                <label>CONTACT<input id="playerContact" maxlength="40" placeholder="Nomor WhatsApp / telepon"></label>
+                <label>CONTACT TYPE
+                  <select id="playerContactType" onchange="updateContactField()">
+                    <option value="social">Social Media</option>
+                    <option value="email">Email</option>
+                    <option value="phone">WhatsApp / Phone</option>
+                  </select>
+                </label>
+                <label class="contact-value-field">CONTACT DETAIL<input id="playerContactValue" maxlength="100" placeholder="@username"></label>
               </div>
               <div class="player-form-actions"><button class="primary-btn" onclick="registerPlayer()">SAVE PLAYER <span>→</span></button><span id="playerStatus" class="player-status">Belum tersimpan</span></div>
             </div>
           </div>
           <div class="home-visual">
-            <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
-            <img class="hero-truck" src="asset/Truck Tanki.png" alt="Truck Tanki Pertamina">
+            <div class="hero-orbit hero-orbit-a"></div><div class="hero-orbit hero-orbit-b"></div>
+            <div class="truck-360-stage"><img class="hero-truck" src="asset/Truck Tanki.png" alt="Truck Tanki Pertamina"></div>
             <div class="float-badge badge-a"><small>01</small><b>HEAD TRACKING</b></div>
             <div class="float-badge badge-b"><small>02</small><b>3-LANE DRIVE</b></div>
             <div class="float-badge badge-c"><small>03</small><b>LIVE SCORE</b></div>
@@ -101,7 +103,7 @@
       <section id="capture" class="page game-page">
         <div class="game-titlebar">
           <button class="back-btn" onclick="showPage('home')">← HOME</button>
-          <div><span class="kicker">02 / CAPTURE ENERGY</span><h2>DRIVE THE ENERGY.</h2></div>
+          <div><span class="kicker">02 / CAPTURE ENERGY</span><h2>CHOOSE YOUR LANE.</h2></div>
           <div class="score-pill"><span>SCORE</span><b id="captureScore">0000</b></div>
         </div>
         <div class="capture-shell">
@@ -125,7 +127,7 @@
             <div id="cameraPrompt" class="camera-prompt">
               <span class="camera-icon">◎</span><span class="kicker light">READY PLAYER</span>
               <h3>MOVE YOUR HEAD.<br><em>CHOOSE YOUR LANE.</em></h3>
-              <p>Truk bergerak di tiga lajur. Ambil produk fuel dan hindari produk non-fuel.</p>
+              <p>Tiga lajur memberi ruang untuk mengambil produk fuel sekaligus menghindari non-fuel.</p>
               <button class="primary-btn" onclick="enableCamera()">ENABLE CAMERA & START <span>→</span></button>
               <small>Kamera diproses real-time di browser. Audio tidak digunakan.</small>
             </div>
@@ -154,7 +156,7 @@
           </div>
           <aside class="word-admin">
             <div class="admin-card">
-              <span class="kicker">WORD BANK</span><h3>Tambah kata baru</h3><p>Kata baru disimpan di perangkat booth dan ikut masuk pada ronde berikutnya.</p>
+              <span class="kicker">WORD BANK</span><h3>Tambah kata baru</h3><p>Kata baru tersimpan di perangkat booth dan digunakan pada ronde berikutnya.</p>
               <div class="add-word-row"><input id="customWordInput" maxlength="16" placeholder="Contoh: MYPERTAMINA"><button onclick="addCustomWord()">ADD</button></div>
               <div id="wordBankList" class="word-bank-list"></div>
             </div>
@@ -170,8 +172,8 @@
           <button id="memoryStart" class="primary-btn compact" onclick="startMemory()">START GAME</button>
         </div>
         <div class="memory-shell">
-          <div class="memory-brand"><img src="asset/Pertamina Logo.png" alt="Pertamina Patra Niaga"><div><b>ENERGY MEMORY</b><span>Find every product pair</span></div></div>
-          <div class="memory-stats"><div><span>TIME</span><b><strong id="memoryTime">45</strong>s</b></div><div><span>MOVES</span><b id="memoryMoves">00</b></div><div><span>MATCHES</span><b><strong id="memoryMatches">0</strong>/8</b></div></div>
+          <div class="memory-brand"><img src="asset/Pertamina Logo.png" alt="Pertamina Patra Niaga"><div><b>ENERGY MEMORY</b><span>Cover: Pertamina Patra Niaga • Flip: product assets</span></div></div>
+          <div class="memory-stats"><div><span>TIME</span><b><strong id="memoryTime">60</strong>s</b></div><div><span>MOVES</span><b id="memoryMoves">00</b></div><div><span>MATCHES</span><b><strong id="memoryMatches">0</strong>/8</b></div></div>
           <div id="memoryBoard" class="memory-board"></div>
           <div id="memoryResult" class="memory-result hidden"></div>
         </div>
