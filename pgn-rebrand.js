@@ -32,11 +32,11 @@
 
   function setText(selector,text){
     const el=document.querySelector(selector);
-    if(el)el.textContent=text;
+    if(el&&el.textContent!==text)el.textContent=text;
   }
   function setHTML(selector,html){
     const el=document.querySelector(selector);
-    if(el)el.innerHTML=html;
+    if(el&&el.innerHTML!==html)el.innerHTML=html;
   }
 
   function applyBranding(){
