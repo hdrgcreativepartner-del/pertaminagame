@@ -24,6 +24,9 @@
 
 .game-picker{grid-template-columns:repeat(5,minmax(0,1fr))}
 
+/* Capture gas-vs-fuel legend */
+#capture .legend-card>div:nth-child(2){display:flex!important}
+
 /* CATCH THE GAS */
 .catchgas-page{overflow-x:hidden}
 .catchgas-shell{
