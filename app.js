@@ -12,18 +12,18 @@ function shuffle(arr){return [...arr].sort(()=>Math.random()-.5)}
 function uuid(){return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,9)}`}
 function toast(message){const el=$('toast');if(!el)return;el.textContent=message;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2200)}
 function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()}
-function preloadAssets(){const list=[CFG.splash?.asset,CFG.capture?.truckAsset,CFG.memoryBack,...(CFG.capture?.fuel||[]).map(x=>x.src),...(CFG.capture?.nonFuel||[]).map(x=>x.src),...(CFG.memory||[])];[...new Set(list.filter(Boolean))].forEach(src=>{const im=new Image();im.src=src;imageCache[src]=im})}
+function preloadAssets(){const list=[CFG.splash?.asset,CFG.splash?.partnerAsset,CFG.capture?.truckAsset,CFG.memoryBack,...(CFG.capture?.fuel||[]).map(x=>x.src),...(CFG.capture?.nonFuel||[]).map(x=>x.src),...(CFG.memory||[]),...(CFG.catchGas?.good||[]).map(x=>x.src),...(CFG.catchGas?.bad||[]).map(x=>x.src)];[...new Set(list.filter(Boolean))].forEach(src=>{const im=new Image();im.src=src;imageCache[src]=im})}
 
 function hideSplash(){const s=$('splash');if(!s)return;s.classList.add('splash-hide');setTimeout(()=>{s.remove();sessionStorage.getItem('pertaminaBoothAuth')==='1'?showApp():showLogin()},720)}
 function showLogin(){$('loginScreen')?.classList.remove('hidden');$('appRoot')?.classList.add('hidden');setTimeout(()=>$('loginUser')?.focus(),150)}
-function showApp(){$('loginScreen')?.classList.add('hidden');$('appRoot')?.classList.remove('hidden');restorePlayerForm();renderWordBank();prepareWordSearch();resetMemory();renderLeaderboard();showPage('home')}
-function loginOperator(e){e?.preventDefault();const user=$('loginUser').value.trim().toLowerCase(),pin=$('loginPin').value.trim();if(user===String(CFG.auth?.user||'').toLowerCase()&&pin===String(CFG.auth?.pin||'')){sessionStorage.setItem('pertaminaBoothAuth','1');$('loginError').textContent='';showApp();toast('Booth access granted')}else{$('loginError').textContent='User atau PIN tidak sesuai.';$('loginPin').value='';$('loginPin').focus()}}
+function showApp(){$('loginScreen')?.classList.add('hidden');$('appRoot')?.classList.remove('hidden');restorePlayerForm();renderWordBank();prepareWordSearch();resetMemory();resetCatchGas();renderLeaderboard();showPage('home')}
+function loginOperator(e){e?.preventDefault();const user=$('loginUser').value.trim().toLowerCase(),pin=$('loginPin').value.trim(),users=CFG.auth?.users||[{user:CFG.auth?.user,pin:CFG.auth?.pin}],valid=users.some(x=>String(x?.user||'').trim().toLowerCase()===user&&String(x?.pin||'').trim()===pin);if(valid){sessionStorage.setItem('pertaminaBoothAuth','1');$('loginError').textContent='';showApp();toast('Booth access granted')}else{$('loginError').textContent='User atau PIN tidak sesuai.';$('loginPin').value='';$('loginPin').focus()}}
 function logoutOperator(){if(!confirm('Keluar dari booth operator?'))return;stopAllGames();sessionStorage.removeItem('pertaminaBoothAuth');showLogin()}
 
 function setNavActive(id){document.querySelectorAll('.nav-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.page===id))}
-function showPage(id){if(id!==currentPage){if(currentPage==='capture')stopCamera();if(currentPage==='word')stopWordSearch(false);if(currentPage==='memory')stopMemory(false)}currentPage=id;document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));setNavActive(id);if(id==='leaderboard')renderLeaderboard();window.scrollTo({top:0,behavior:'smooth'})}
-function openGame(id){if(!ensurePlayer())return;if(id==='capture')resetCapture();if(id==='word')prepareWordSearch();if(id==='memory')resetMemory();showPage(id)}
-function stopAllGames(){stopCamera();stopWordSearch(false);stopMemory(false)}
+function showPage(id){if(id!==currentPage){if(currentPage==='capture')stopCamera();if(currentPage==='word')stopWordSearch(false);if(currentPage==='memory')stopMemory(false);if(currentPage==='catchgas')stopCatchGas()}currentPage=id;document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));setNavActive(id);if(id==='leaderboard')renderLeaderboard();window.scrollTo({top:0,behavior:'smooth'})}
+function openGame(id){if(!ensurePlayer())return;if(id==='capture')resetCapture();if(id==='word')prepareWordSearch();if(id==='memory')resetMemory();if(id==='catchgas')resetCatchGas();showPage(id)}
+function stopAllGames(){stopCamera();stopWordSearch(false);stopMemory(false);stopCatchGas()}
 
 function contactMeta(type){return type==='email'?{label:'Email',placeholder:'nama@email.com',inputType:'email'}:type==='phone'?{label:'WhatsApp / Phone',placeholder:'08xx xxxx xxxx',inputType:'tel'}:{label:'Social Media',placeholder:'@username',inputType:'text'}}
 function updateContactField(){const meta=contactMeta($('contactType')?.value),input=$('contactValue');if(input){input.placeholder=meta.placeholder;input.type=meta.inputType}}
@@ -89,17 +89,135 @@ function stopWordSearch(reset=false){clearInterval(word.timer);word.running=fals
 
 /* ENERGY MEMORY */
 const memory={running:false,cards:[],first:null,lock:false,moves:0,matches:0,time:60,timer:null};
-function memoryCardMarkup(src,i){return `<button class="memory-card-btn" data-i="${i}" onclick="flipCard(${i})"><span class="memory-card-inner"><span class="memory-face memory-cover"><img src="${CFG.memoryBack}" alt="Pertamina Patra Niaga"></span><span class="memory-face memory-product"><img src="${src}" alt="Pertamina product"></span></span></button>`}
+function memoryCardMarkup(src,i){return `<button class="memory-card-btn" data-i="${i}" onclick="flipCard(${i})"><span class="memory-card-inner"><span class="memory-face memory-cover"><img src="${CFG.memoryBack}" alt="Pertamina Gas Negara"></span><span class="memory-face memory-product"><img src="${src}" alt="PGN gas product"></span></span></button>`}
 function resetMemory(){stopMemory(false);const base=CFG.memory||[];Object.assign(memory,{running:false,cards:shuffle([...base,...base]),first:null,lock:false,moves:0,matches:0,time:60});$('memoryMoves').textContent='00';$('memoryMatches').textContent='0';$('memoryTime').textContent='60';$('memoryBoard').innerHTML=memory.cards.map(memoryCardMarkup).join('');$('memoryResult').classList.add('hidden');$('memoryResult').innerHTML='';$('memoryStart').disabled=false;$('memoryStart').textContent='START GAME'}
 function startMemory(){if(!ensurePlayer())return;resetMemory();memory.running=true;$('memoryStart').disabled=true;$('memoryStart').textContent='PLAYING';memory.timer=setInterval(()=>{memory.time--;$('memoryTime').textContent=memory.time;if(memory.time<=0)finishMemory(false)},1000)}
 function flipCard(i){if(!memory.running||memory.lock)return;const el=document.querySelector(`.memory-card-btn[data-i="${i}"]`);if(!el||el.classList.contains('flipped')||el.classList.contains('matched'))return;el.classList.add('flipped');if(memory.first===null){memory.first=i;return}const j=memory.first;memory.first=null;memory.moves++;$('memoryMoves').textContent=String(memory.moves).padStart(2,'0');const prev=document.querySelector(`.memory-card-btn[data-i="${j}"]`);if(memory.cards[i]===memory.cards[j]){el.classList.add('matched');prev?.classList.add('matched');memory.matches++;$('memoryMatches').textContent=memory.matches;if(memory.matches===(CFG.memory||[]).length)finishMemory(true)}else{memory.lock=true;setTimeout(()=>{el.classList.remove('flipped');prev?.classList.remove('flipped');memory.lock=false},650)}}
 function finishMemory(completed){if(!memory.running)return;memory.running=false;clearInterval(memory.timer);const base=(CFG.memory||[]).length,score=Math.max(0,memory.matches*100+memory.time*4-Math.max(0,memory.moves-base)*5);saveScore('Energy Memory',score);$('memoryStart').disabled=false;$('memoryStart').textContent='PLAY AGAIN';$('memoryResult').classList.remove('hidden');$('memoryResult').innerHTML=`<b>${completed?'ALL PAIRS FOUND':'TIME UP'}</b><span>SCORE ${score}</span>`}
 function stopMemory(){clearInterval(memory.timer);memory.running=false}
 
+/* CATCH THE GAS — touchscreen + mouse reaction game */
+const catchGas={running:false,time:30,score:0,combo:1,timer:null,spawnTimer:null,wave:0};
+
+function updateCatchGasHud(){
+  if($('catchGasTime'))$('catchGasTime').textContent=catchGas.time;
+  if($('catchGasScore'))$('catchGasScore').textContent=pad(catchGas.score);
+  if($('catchGasCombo'))$('catchGasCombo').textContent='x'+Math.max(1,Math.round(catchGas.combo));
+}
+
+function buildCatchGasBoard(){
+  const board=$('catchGasBoard');if(!board)return;
+  board.innerHTML=Array.from({length:12},(_,i)=>`<button class="catchgas-slot" type="button" data-slot="${i}" aria-label="Game slot ${i+1}"><span class="catchgas-slot-ring"></span></button>`).join('');
+  board.querySelectorAll('.catchgas-slot').forEach(slot=>{
+    slot.addEventListener('pointerdown',e=>{e.preventDefault();hitCatchGas(slot,e)});
+  });
+}
+
+function clearCatchGasSlots(){
+  document.querySelectorAll('.catchgas-slot').forEach(slot=>{
+    slot.classList.remove('live','hit','miss');
+    slot.removeAttribute('data-good');slot.removeAttribute('data-points');slot.removeAttribute('data-label');
+    slot.innerHTML='<span class="catchgas-slot-ring"></span>';
+  });
+}
+
+function resetCatchGas(){
+  stopCatchGas();
+  Object.assign(catchGas,{running:false,time:CFG.catchGas?.duration||30,score:0,combo:1,wave:0});
+  buildCatchGasBoard();clearCatchGasSlots();updateCatchGasHud();
+  $('catchGasIntro')?.classList.remove('hidden');
+  $('catchGasResult')?.classList.add('hidden');
+  if($('catchGasStart')){$('catchGasStart').disabled=false;$('catchGasStart').textContent='START GAME'}
+}
+
+function catchGasInterval(){
+  const duration=CFG.catchGas?.duration||30,progress=1-Math.max(0,catchGas.time)/duration;
+  const start=CFG.catchGas?.spawnEveryStart||820,end=CFG.catchGas?.spawnEveryEnd||390;
+  return Math.round(start+(end-start)*progress);
+}
+
+function spawnCatchGasWave(){
+  if(!catchGas.running)return;
+  clearCatchGasSlots();
+  const good=CFG.catchGas?.good||[],bad=CFG.catchGas?.bad||[];
+  if(!good.length)return;
+  const slots=shuffle([...document.querySelectorAll('.catchgas-slot')]);
+  const duration=CFG.catchGas?.duration||30,progress=1-Math.max(0,catchGas.time)/duration;
+  const min=CFG.catchGas?.activeMin||2,max=CFG.catchGas?.activeMax||5;
+  const count=Math.min(slots.length,Math.max(min,Math.round(min+(max-min)*progress)));
+  for(let i=0;i<count;i++){
+    const isGood=Math.random()<.62||!bad.length,pool=isGood?good:bad,item=pool[Math.floor(Math.random()*pool.length)],slot=slots[i];
+    if(!item)continue;
+    slot.dataset.good=isGood?'1':'0';slot.dataset.points=String(item.points||0);slot.dataset.label=item.label||'';
+    slot.classList.add('live');
+    slot.innerHTML=`<span class="catchgas-slot-ring"></span><img src="${item.src}" alt="${esc(item.label||'Game item')}">`;
+  }
+  catchGas.wave++;
+  clearTimeout(catchGas.spawnTimer);
+  catchGas.spawnTimer=setTimeout(spawnCatchGasWave,catchGasInterval());
+}
+
+function showCatchGasFx(slot,good,points,label){
+  const layer=$('catchGasFxLayer'),stage=$('catchGasStage');if(!layer||!stage)return;
+  const sr=stage.getBoundingClientRect(),r=slot.getBoundingClientRect(),fx=document.createElement('div');
+  fx.className=`catchgas-score-fx ${good?'good':'bad'}`;
+  fx.style.left=`${r.left-sr.left+r.width/2}px`;fx.style.top=`${r.top-sr.top+r.height/2}px`;
+  fx.innerHTML=`<b>${good?'+':''}${points}</b><span>${good?'GAS CAPTURED':'WRONG PRODUCT'} • ${esc(label)}</span>`;
+  layer.appendChild(fx);setTimeout(()=>fx.remove(),850);
+  stage.classList.remove('catch-good','catch-bad');void stage.offsetWidth;stage.classList.add(good?'catch-good':'catch-bad');
+  setTimeout(()=>stage.classList.remove('catch-good','catch-bad'),280);
+}
+
+function hitCatchGas(slot){
+  if(!catchGas.running||!slot.classList.contains('live')||slot.classList.contains('hit'))return;
+  const good=slot.dataset.good==='1',raw=Number(slot.dataset.points)||0,label=slot.dataset.label||'';
+  slot.classList.add('hit',good?'good':'bad');slot.classList.remove('live');
+  if(good){
+    const gained=Math.round(Math.abs(raw)*Math.max(1,catchGas.combo));
+    catchGas.score+=gained;catchGas.combo=Math.min(6,catchGas.combo+.35);
+    showCatchGasFx(slot,true,gained,label);navigator.vibrate?.(20);
+  }else{
+    const lost=Math.abs(raw);
+    catchGas.score=Math.max(0,catchGas.score-lost);catchGas.combo=1;
+    showCatchGasFx(slot,false,-lost,label);navigator.vibrate?.([35,25,35]);
+  }
+  updateCatchGasHud();
+  setTimeout(()=>{slot.classList.remove('hit','good','bad');slot.innerHTML='<span class="catchgas-slot-ring"></span>'},360);
+}
+
+function startCatchGas(){
+  if(!ensurePlayer())return;
+  resetCatchGas();catchGas.running=true;
+  $('catchGasIntro')?.classList.add('hidden');$('catchGasResult')?.classList.add('hidden');
+  if($('catchGasStart')){$('catchGasStart').disabled=true;$('catchGasStart').textContent='PLAYING'}
+  spawnCatchGasWave();
+  catchGas.timer=setInterval(()=>{
+    if(!catchGas.running)return;
+    catchGas.time--;catchGas.combo=Math.max(1,catchGas.combo-.04);updateCatchGasHud();
+    if(catchGas.time<=0)finishCatchGas();
+  },1000);
+}
+
+function finishCatchGas(){
+  if(!catchGas.running)return;
+  catchGas.running=false;clearInterval(catchGas.timer);clearTimeout(catchGas.spawnTimer);clearCatchGasSlots();
+  saveScore('Catch The Gas',catchGas.score);
+  const p=getCurrentPlayer();
+  if($('catchGasPlayer'))$('catchGasPlayer').textContent=p?.name||$('playerName')?.value||'PLAYER';
+  if($('catchGasResultScore'))$('catchGasResultScore').textContent=pad(catchGas.score);
+  if($('catchGasResultText'))$('catchGasResultText').textContent=catchGas.score>=500?'GAS MASTER — OUTSTANDING REACTION!':catchGas.score>=250?'GREAT CATCH — KEEP THE ENERGY FLOWING.':'GOOD TRY — CATCH MORE GAS NEXT ROUND.';
+  $('catchGasResult')?.classList.remove('hidden');
+  if($('catchGasStart')){$('catchGasStart').disabled=false;$('catchGasStart').textContent='PLAY AGAIN'}
+}
+
+function stopCatchGas(){
+  catchGas.running=false;clearInterval(catchGas.timer);clearTimeout(catchGas.spawnTimer);
+}
+
 /* LEADERBOARD + EXPORT */
 function renderLeaderboard(){const players=readJSON(PLAYERS_KEY,[]),scores=readJSON(SCORES_KEY,[]),best=[...scores].sort((a,b)=>b.score-a.score).slice(0,12);$('playerCount').textContent=players.length;$('scoreCount').textContent=scores.length;$('leaderboardList').innerHTML=best.length?best.map((x,i)=>`<div class="rank-row"><span class="rank-num">${String(i+1).padStart(2,'0')}</span><div><b>${esc(x.name)}</b><small>${esc(x.game)} • ${esc(contactMeta(x.contactType).label)}</small></div><strong>${x.score}</strong></div>`).join(''):'<div class="empty-state">Belum ada score. Mulai game untuk mengisi leaderboard.</div>'}
 function clearLeaderboard(){if(confirm('Hapus semua score pada perangkat ini?')){localStorage.removeItem(SCORES_KEY);renderLeaderboard();toast('Scores dihapus')}}
-function exportPlayerData(){const players=readJSON(PLAYERS_KEY,[]),scores=readJSON(SCORES_KEY,[]);if(!players.length){toast('Belum ada data player');return}if(!window.XLSX){toast('Excel library belum tersedia');return}const playerRows=players.map(p=>({'Player ID':p.id,'Name':p.name,'Contact Type':contactMeta(p.contactType).label,'Contact Detail':p.contactValue,'Registered At':p.createdAt,'Updated At':p.updatedAt})),scoreRows=scores.map(s=>({'Player ID':s.playerId,'Name':s.name,'Contact Type':contactMeta(s.contactType).label,'Contact Detail':s.contactValue,'Game':s.game,'Score':s.score,'Played At':s.timestamp})),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(playerRows),'Players');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(scoreRows),'Scores');const d=new Date(),date=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;XLSX.writeFile(wb,`Pertamina-Booth-Players-${date}.xlsx`)}
+function exportPlayerData(){const players=readJSON(PLAYERS_KEY,[]),scores=readJSON(SCORES_KEY,[]);if(!players.length){toast('Belum ada data player');return}if(!window.XLSX){toast('Excel library belum tersedia');return}const playerRows=players.map(p=>({'Player ID':p.id,'Name':p.name,'Contact Type':contactMeta(p.contactType).label,'Contact Detail':p.contactValue,'Registered At':p.createdAt,'Updated At':p.updatedAt})),scoreRows=scores.map(s=>({'Player ID':s.playerId,'Name':s.name,'Contact Type':contactMeta(s.contactType).label,'Contact Detail':s.contactValue,'Game':s.game,'Score':s.score,'Played At':s.timestamp})),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(playerRows),'Players');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(scoreRows),'Scores');const d=new Date(),date=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;XLSX.writeFile(wb,`PGN-Booth-Players-${date}.xlsx`)}
 
 document.addEventListener('DOMContentLoaded',()=>{
   preloadAssets();
