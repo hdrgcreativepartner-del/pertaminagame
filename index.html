@@ -13,12 +13,17 @@
   <link rel="stylesheet" href="booth-rev5.css?v=20260930-pgn-r10">
   <link rel="stylesheet" href="booth-rev7.css?v=20260930-pgn-r10">
   <link rel="stylesheet" href="pgn-rebrand.css?v=20260930-pgn-r10">
+  <link rel="stylesheet" href="catchgas-responsive.css?v=20261001-r1">
 </head>
 <body>
   <div id="splash" class="splash" aria-label="Pertamina Gas Negara">
     <div class="splash-accent accent-red"></div>
     <div class="splash-accent accent-blue"></div>
-    <img class="splash-logo" src="asset/Pertamina Gas Negara logo.png" alt="Pertamina Gas Negara">
+    <div class="splash-brand-pair">
+      <img class="splash-partner-logo danantara-logo" src="asset/Danantara_Indonesia logo.png" alt="Danantara Indonesia">
+      <span class="brand-divider" aria-hidden="true"></span>
+      <img class="splash-partner-logo pgn-logo" src="asset/Pertamina Gas Negara logo.png" alt="Pertamina Gas Negara">
+    </div>
     <div class="splash-loader"><i></i></div>
   </div>
 
@@ -42,15 +47,20 @@
 
   <div id="appRoot" class="app-root hidden">
     <header class="topbar">
-      <button class="brand" onclick="showPage('home')" aria-label="Home">
-        <img src="asset/Pertamina Gas Negara logo.png" alt="Pertamina Gas Negara">
-        <span><b>PERTAMINA GAS NEGARA</b><small>GAS ENERGY EXPERIENCE</small></span>
+      <button class="brand brand-dual" onclick="showPage('home')" aria-label="Home">
+        <span class="header-brand-logos">
+          <img class="header-danantara" src="asset/Danantara_Indonesia logo.png" alt="Danantara Indonesia">
+          <i aria-hidden="true"></i>
+          <img class="header-pgn" src="asset/Pertamina Gas Negara logo.png" alt="Pertamina Gas Negara">
+        </span>
+        <span class="brand-copy"><b>PERTAMINA GAS NEGARA</b><small>GAS ENERGY EXPERIENCE</small></span>
       </button>
       <nav class="nav-tabs" aria-label="Game navigation">
         <button data-page="home" onclick="showPage('home')"><b>⌂</b><span>Home</span></button>
         <button data-page="word" onclick="openGame('word')"><b>⌕</b><span>Energy Word</span></button>
         <button data-page="capture" onclick="openGame('capture')"><b>◉</b><span>Capture Energy</span></button>
         <button data-page="memory" onclick="openGame('memory')"><b>▦</b><span>Energy Memory</span></button>
+        <button data-page="catchgas" onclick="openGame('catchgas')"><b>✦</b><span>Catch The Gas</span></button>
         <button data-page="leaderboard" onclick="showPage('leaderboard')"><b>♛</b><span>Leaderboard</span></button>
       </nav>
       <div class="header-actions">
@@ -107,7 +117,8 @@
           <button onclick="openGame('word')"><span>01</span><div><b>ENERGY WORD</b><small>Find PGN gas words</small></div><i>→</i></button>
           <button onclick="openGame('capture')"><span>02</span><div><b>CAPTURE ENERGY</b><small>Catch PGN gas products</small></div><i>→</i></button>
           <button onclick="openGame('memory')"><span>03</span><div><b>ENERGY MEMORY</b><small>Match PGN gas products</small></div><i>→</i></button>
-          <button onclick="showPage('leaderboard')"><span>04</span><div><b>LEADERBOARD</b><small>Top booth players</small></div><i>→</i></button>
+          <button onclick="openGame('catchgas')"><span>04</span><div><b>CATCH THE GAS</b><small>Touch / click reaction game</small></div><i>→</i></button>
+          <button onclick="showPage('leaderboard')"><span>05</span><div><b>LEADERBOARD</b><small>Top booth players</small></div><i>→</i></button>
         </div>
       </section>
 
@@ -130,7 +141,7 @@
               <div><span>COMBO</span><b id="captureCombo">x1</b></div>
               <div class="time-meter"><i id="captureMeter"></i></div>
             </div>
-            <div class="legend-card"><div><i class="good-dot"></i><span>PGN GAS PRODUCT</span><b>+ SCORE</b></div><div><i class="bad-dot"></i><span>MISSED GAS</span><b>NO SCORE</b></div></div>
+            <div class="legend-card"><div><i class="good-dot"></i><span>PGN GAS PRODUCT</span><b>+ SCORE</b></div><div><i class="bad-dot"></i><span>FUEL PRODUCT</span><b>− SCORE</b></div></div>
           </aside>
 
           <div class="capture-stage" id="captureStage">
@@ -145,7 +156,7 @@
               <span class="camera-icon">◎</span>
               <span class="kicker light">READY PLAYER</span>
               <h3>MOVE YOUR HEAD.<br><em>CAPTURE THE GAS.</em></h3>
-              <p>Tangkap logo GasKita, GasKu, GasLine, dan GasLink. Setelah kamera diizinkan, track otomatis masuk fullscreen.</p>
+              <p>Tangkap GasKita, GasKu, GasLine, GasLink, dan Bright Gas. Hindari produk BBM Pertamina agar score tidak berkurang. Setelah kamera diizinkan, track otomatis masuk fullscreen.</p>
               <button class="primary-btn" onclick="enableCamera()">ALLOW CAMERA & START <span>→</span></button>
               <small>Camera diproses real-time di browser. Audio tidak digunakan.</small>
             </div>
@@ -195,10 +206,65 @@
           <button id="memoryStart" class="primary-btn compact" onclick="startMemory()">START GAME</button>
         </div>
         <div class="memory-shell">
-          <div class="memory-brand"><img src="asset/Pertamina Gas Negara logo.png" alt="Pertamina Gas Negara"><div><b>PGN GAS MEMORY</b><span>Cocokkan setiap pasangan logo GasKita, GasKu, GasLine, dan GasLink</span></div></div>
-          <div class="memory-stats"><div><span>TIME</span><b><strong id="memoryTime">60</strong>s</b></div><div><span>MOVES</span><b id="memoryMoves">00</b></div><div><span>MATCHES</span><b><strong id="memoryMatches">0</strong>/4</b></div></div>
+          <div class="memory-brand"><img src="asset/Pertamina Gas Negara logo.png" alt="Pertamina Gas Negara"><div><b>PGN GAS MEMORY</b><span>Cocokkan pasangan GasKita, GasKu, GasLine, GasLink, dan Bright Gas</span></div></div>
+          <div class="memory-stats"><div><span>TIME</span><b><strong id="memoryTime">60</strong>s</b></div><div><span>MOVES</span><b id="memoryMoves">00</b></div><div><span>MATCHES</span><b><strong id="memoryMatches">0</strong>/5</b></div></div>
           <div id="memoryBoard" class="memory-board"></div>
           <div id="memoryResult" class="memory-result hidden"></div>
+        </div>
+      </section>
+
+
+      <section id="catchgas" class="page game-page catchgas-page">
+        <div class="game-titlebar">
+          <button class="back-btn" onclick="showPage('home')">← HOME</button>
+          <div><span class="kicker">04 / TOUCH GAME</span><h2>CATCH THE GAS.</h2></div>
+          <button id="catchGasStart" class="primary-btn compact" onclick="startCatchGas()">START GAME</button>
+        </div>
+
+        <div class="catchgas-shell">
+          <div class="catchgas-head">
+            <div>
+              <span class="kicker">FAST REACTION CHALLENGE</span>
+              <h3>Tap gas. Avoid fuel.</h3>
+              <p>Sentuh atau klik produk gas PGN untuk mendapatkan score. Hindari produk BBM Pertamina karena akan mengurangi score.</p>
+            </div>
+            <div class="catchgas-stats">
+              <div><span>TIME</span><b><strong id="catchGasTime">30</strong>s</b></div>
+              <div><span>SCORE</span><b id="catchGasScore">0000</b></div>
+              <div><span>COMBO</span><b id="catchGasCombo">x1</b></div>
+            </div>
+          </div>
+
+          <div class="catchgas-legend">
+            <span><i class="good-dot"></i> GAS PRODUCT <b>+ SCORE</b></span>
+            <span><i class="bad-dot"></i> FUEL PRODUCT <b>− SCORE</b></span>
+          </div>
+
+          <div id="catchGasStage" class="catchgas-stage">
+            <div id="catchGasBoard" class="catchgas-board" aria-label="Catch The Gas game board"></div>
+            <div id="catchGasIntro" class="catchgas-intro">
+              <div class="dual-mini-brand">
+                <img src="asset/Danantara_Indonesia logo.png" alt="Danantara Indonesia">
+                <i></i>
+                <img src="asset/Pertamina Gas Negara logo.png" alt="Pertamina Gas Negara">
+              </div>
+              <span class="kicker">READY PLAYER</span>
+              <h3>CATCH<br><em>THE GAS.</em></h3>
+              <p>Touchscreen dan mouse didukung. Tangkap produk gas, hindari produk BBM.</p>
+              <button class="primary-btn" onclick="startCatchGas()">START 30 SEC <span>→</span></button>
+            </div>
+            <div id="catchGasFxLayer" class="catchgas-fx-layer"></div>
+            <div id="catchGasResult" class="result-modal hidden">
+              <span>ROUND COMPLETE</span>
+              <p id="catchGasPlayer" class="capture-result-player"></p>
+              <strong id="catchGasResultScore">0000</strong>
+              <p id="catchGasResultText"></p>
+              <div>
+                <button class="primary-btn" onclick="startCatchGas()">PLAY AGAIN</button>
+                <button class="outline-btn dark" onclick="showPage('home')">HOME</button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
