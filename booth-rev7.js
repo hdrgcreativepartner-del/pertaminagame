@@ -25,7 +25,7 @@
     overlay.innerHTML=`
       <div class="booth-result-card" role="dialog" aria-modal="true" aria-label="${game} result">
         <button class="booth-result-close" type="button" aria-label="Close">×</button>
-        <div class="booth-result-brand"><img src="asset/Pertamina Logo.png" alt="Pertamina Patra Niaga"></div>
+        <div class="booth-result-brand"><img src="asset/Pertamina Gas Negara logo.png" alt="Pertamina Gas Negara"></div>
         <span class="booth-result-kicker">${game}</span>
         <h2>${status}</h2>
         <p class="booth-result-player">${String(name).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}</p>
