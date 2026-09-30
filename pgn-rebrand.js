@@ -60,38 +60,38 @@
     setText('.label-three span','LIVE SCORE');
 
     const picks=document.querySelectorAll('.game-picker button');
-    if(picks[0])picks[0].querySelector('small').textContent='Find PGN gas words';
-    if(picks[1])picks[1].querySelector('small').textContent='Catch PGN gas products';
-    if(picks[2])picks[2].querySelector('small').textContent='Match PGN gas products';
+    if(picks[0]){const el=picks[0].querySelector('small');if(el&&el.textContent!=='Find PGN gas words')el.textContent='Find PGN gas words';}
+    if(picks[1]){const el=picks[1].querySelector('small');if(el&&el.textContent!=='Catch PGN gas products')el.textContent='Catch PGN gas products';}
+    if(picks[2]){const el=picks[2].querySelector('small');if(el&&el.textContent!=='Match PGN gas products')el.textContent='Match PGN gas products';}
 
     setHTML('#capture .game-titlebar h2','CAPTURE THE GAS.');
     const captureSide=document.querySelector('#capture .capture-side .side-card p');
-    if(captureSide)captureSide.textContent='Gerakkan kepala ke kiri, tengah, atau kanan untuk mengarahkan truk menangkap produk gas PGN.';
+    if(captureSide&&captureSide.textContent!=='Gerakkan kepala ke kiri, tengah, atau kanan untuk mengarahkan truk menangkap produk gas PGN.')captureSide.textContent='Gerakkan kepala ke kiri, tengah, atau kanan untuk mengarahkan truk menangkap produk gas PGN.';
     setHTML('#cameraPrompt h3','MOVE YOUR HEAD.<br><em>CAPTURE THE GAS.</em>');
     setText('#cameraPrompt p','Tangkap logo GasKita, GasKu, GasLine, dan GasLink. Saat permainan dimulai, track otomatis masuk fullscreen.');
 
     const legendRows=document.querySelectorAll('#capture .legend-card > div');
     if(legendRows[0]){
       const spans=legendRows[0].querySelectorAll('span,b');
-      if(spans[0])spans[0].textContent='PGN GAS PRODUCT';
-      if(spans[1])spans[1].textContent='+ SCORE';
+      if(spans[0]&&spans[0].textContent!=='PGN GAS PRODUCT')spans[0].textContent='PGN GAS PRODUCT';
+      if(spans[1]&&spans[1].textContent!=='+ SCORE')spans[1].textContent='+ SCORE';
     }
 
     setHTML('#word .game-titlebar h2','FIND THE WORDS.');
     setText('.word-instruction','TEKA-TEKI SILANG HURUF PGN — cari kata dari kiri ke kanan atau dari atas ke bawah. Touch / click lalu drag.');
     const wordAdmin=document.querySelector('.word-admin .admin-card p');
-    if(wordAdmin)wordAdmin.textContent='Tambahkan istilah PGN atau gas bumi. Kata tersimpan di perangkat booth dan digunakan pada ronde berikutnya.';
+    if(wordAdmin&&wordAdmin.textContent!=='Tambahkan istilah PGN atau gas bumi. Kata tersimpan di perangkat booth dan digunakan pada ronde berikutnya.')wordAdmin.textContent='Tambahkan istilah PGN atau gas bumi. Kata tersimpan di perangkat booth dan digunakan pada ronde berikutnya.';
 
     setHTML('#memory .game-titlebar h2','MATCH THE GAS PRODUCTS.');
     setText('.memory-brand b','PGN GAS MEMORY');
     setText('.memory-brand span','Cocokkan setiap pasangan logo GasKita, GasKu, GasLine, dan GasLink');
 
     const loginCopy=document.querySelector('.login-form > p:not(.form-error)');
-    if(loginCopy)loginCopy.textContent='Masuk untuk menjalankan permainan PGN, mengelola word bank, dan mengunduh data peserta.';
+    if(loginCopy&&loginCopy.textContent!=='Masuk untuk menjalankan permainan PGN, mengelola word bank, dan mengunduh data peserta.')loginCopy.textContent='Masuk untuk menjalankan permainan PGN, mengelola word bank, dan mengunduh data peserta.';
 
     const footer=document.querySelectorAll('footer span');
-    if(footer[0])footer[0].textContent='PERTAMINA GAS NEGARA';
-    if(footer[1])footer[1].textContent='GAS ENERGY EXPERIENCE • EVENT BOOTH';
+    if(footer[0]&&footer[0].textContent!=='PERTAMINA GAS NEGARA')footer[0].textContent='PERTAMINA GAS NEGARA';
+    if(footer[1]&&footer[1].textContent!=='GAS ENERGY EXPERIENCE • EVENT BOOTH')footer[1].textContent='GAS ENERGY EXPERIENCE • EVENT BOOTH';
 
     document.querySelectorAll('.booth-result-brand img').forEach(img=>{
       img.src=PGN_LOGO;
