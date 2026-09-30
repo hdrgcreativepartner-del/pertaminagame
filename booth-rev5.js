@@ -17,7 +17,9 @@
       const cfg=window.EVENT_CONFIG||{};
       const user=(document.getElementById('loginUser')?.value||'').trim().toLowerCase();
       const pin=(document.getElementById('loginPin')?.value||'').trim();
-      if(user===String(cfg.auth?.user||'').trim().toLowerCase()&&pin===String(cfg.auth?.pin||'').trim()){
+      const users=cfg.auth?.users||[{user:cfg.auth?.user,pin:cfg.auth?.pin}];
+      const valid=users.some(x=>String(x?.user||'').trim().toLowerCase()===user&&String(x?.pin||'').trim()===pin);
+      if(valid){
         sessionStorage.setItem('pertaminaBoothAuth','1');
         const err=document.getElementById('loginError');if(err)err.textContent='';
         if(typeof showApp==='function')showApp();
@@ -140,7 +142,7 @@
       const fx=document.createElement('div');
       fx.className=`capture-score-fx ${o.bad?'bad':'good'}`;
       const pts=Math.abs(Number(o.item.points)||0);
-      fx.innerHTML=o.bad?`<b>−${pts}</b><span>MISSED GAS</span>`:`<b>+${pts}</b><span>GAS CAPTURED</span>`;
+      fx.innerHTML=o.bad?`<b>−${pts}</b><span>WRONG PRODUCT</span>`:`<b>+${pts}</b><span>GAS CAPTURED</span>`;
       stage.appendChild(fx);setTimeout(()=>fx.remove(),850);
     };
 
@@ -157,7 +159,7 @@
     const instruction=document.querySelector('.word-instruction');
     if(instruction)instruction.textContent='TEKA-TEKI SILANG HURUF — cari kata hanya dari kiri ke kanan atau dari atas ke bawah. Touch / click lalu drag.';
     const wordSmall=document.querySelector('.game-picker button:nth-child(1) small');if(wordSmall)wordSmall.textContent='Find PGN gas words';
-    const captureText=document.querySelector('#cameraPrompt p');if(captureText)captureText.textContent='Gerakkan kepala untuk mengarahkan truk. Tangkap logo GasKita, GasKu, GasLine, dan GasLink untuk menambah skor. Saat mulai, track otomatis fullscreen.';
+    const captureText=document.querySelector('#cameraPrompt p');if(captureText)captureText.textContent='Gerakkan kepala untuk mengarahkan truk. Tangkap GasKita, GasKu, GasLine, GasLink, dan Bright Gas. Hindari produk BBM Pertamina karena mengurangi score. Saat mulai, track otomatis fullscreen.';
     const captureTitle=document.querySelector('#cameraPrompt h3');if(captureTitle)captureTitle.innerHTML='MOVE YOUR HEAD.<br><em>CAPTURE THE GAS.</em>';
   }
 
