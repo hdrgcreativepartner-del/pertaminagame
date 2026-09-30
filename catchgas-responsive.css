@@ -1,0 +1,181 @@
+/* Catch The Gas + dual-brand responsive layer — 2026-10-01 */
+
+/* DANANTARA + PGN BRANDING */
+.splash-brand-pair{
+  position:relative;z-index:6;display:flex;align-items:center;justify-content:center;
+  width:min(920px,86vw);gap:clamp(22px,4vw,54px);
+  opacity:0;transform:translateY(10px) scale(.97);
+  animation:dualBrandIn .9s cubic-bezier(.22,.61,.36,1) .08s forwards;
+}
+.splash-partner-logo{display:block;object-fit:contain;max-height:145px;filter:drop-shadow(0 14px 30px rgba(15,45,80,.08))}
+.splash-partner-logo.danantara-logo{width:min(330px,34vw)}
+.splash-partner-logo.pgn-logo{width:min(390px,40vw)}
+.splash-brand-pair .brand-divider{width:1px;height:92px;background:linear-gradient(180deg,transparent,#ccd3da,transparent)}
+@keyframes dualBrandIn{to{opacity:1;transform:translateY(0) scale(1)}}
+
+.brand-dual{gap:12px!important;min-width:0}
+.header-brand-logos{display:flex;align-items:center;gap:9px;min-width:220px}
+.header-brand-logos img{object-fit:contain!important;height:36px!important;width:auto!important;max-width:none!important}
+.header-brand-logos .header-danantara{width:92px!important}
+.header-brand-logos .header-pgn{width:122px!important}
+.header-brand-logos i{width:1px;height:29px;background:#d9dee4;flex:0 0 auto}
+.brand-copy{min-width:0}
+.brand-copy b,.brand-copy small{white-space:nowrap}
+
+.game-picker{grid-template-columns:repeat(5,minmax(0,1fr))}
+
+/* CATCH THE GAS */
+.catchgas-page{overflow-x:hidden}
+.catchgas-shell{
+  max-width:1380px;margin:0 auto;padding:18px;border:1px solid #dce1e6;border-radius:16px;
+  background:#fff;box-shadow:0 18px 48px rgba(13,26,40,.06)
+}
+.catchgas-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:24px;margin-bottom:14px}
+.catchgas-head h3{margin:5px 0 3px;font-family:'Barlow Condensed',sans-serif;font-size:clamp(36px,4vw,58px);line-height:.9;color:#0c2348;text-transform:uppercase}
+.catchgas-head p{max-width:690px;margin:8px 0 0;color:#707b87;font-size:10px;line-height:1.55}
+.catchgas-stats{display:grid;grid-template-columns:repeat(3,minmax(95px,1fr));gap:7px}
+.catchgas-stats>div{padding:10px 13px;border-radius:9px;background:#f4f6f8;border:1px solid #e7eaee}
+.catchgas-stats span{display:block;font-size:7px;font-weight:800;letter-spacing:.13em;color:#7a8590}
+.catchgas-stats b{font-family:'Barlow Condensed',sans-serif;font-size:27px;line-height:1;color:#0c2348}
+.catchgas-stats strong{color:#E9313A}
+.catchgas-legend{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.catchgas-legend>span{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #e1e5e9;border-radius:999px;background:#fafbfc;color:#68727d;font-size:7px;font-weight:800;letter-spacing:.08em}
+.catchgas-legend b{color:#0c2348}
+.catchgas-stage{
+  position:relative;min-height:600px;height:min(70vh,760px);overflow:hidden;border-radius:14px;
+  background:
+    radial-gradient(circle at 50% 45%,rgba(8,121,190,.12),transparent 36%),
+    linear-gradient(155deg,#071521 0%,#0b2638 52%,#06131e 100%);
+  isolation:isolate;touch-action:manipulation
+}
+.catchgas-stage:before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.18;
+  background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);
+  background-size:48px 48px
+}
+.catchgas-board{
+  position:absolute;inset:clamp(18px,3vw,38px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+  grid-template-rows:repeat(3,minmax(0,1fr));gap:clamp(10px,1.6vw,20px);z-index:3
+}
+.catchgas-slot{
+  position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.12);border-radius:18px;
+  background:rgba(255,255,255,.035);backdrop-filter:blur(6px);padding:12px;display:grid;place-items:center;
+  cursor:pointer;touch-action:manipulation;transition:transform .16s ease,border-color .16s ease,background .16s ease
+}
+.catchgas-slot:active{transform:scale(.96)}
+.catchgas-slot-ring{
+  position:absolute;width:44%;aspect-ratio:1;border-radius:50%;border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 0 0 12px rgba(255,255,255,.018),0 0 40px rgba(8,121,190,.04)
+}
+.catchgas-slot.live{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.07);animation:slotAppear .28s cubic-bezier(.2,.8,.2,1)}
+.catchgas-slot.live:before{content:"";position:absolute;inset:9px;border-radius:13px;border:1px solid rgba(183,211,34,.08);pointer-events:none}
+.catchgas-slot img{position:relative;z-index:2;width:82%;height:66%;object-fit:contain;filter:drop-shadow(0 10px 16px rgba(0,0,0,.28));user-select:none;pointer-events:none}
+.catchgas-slot.hit.good{background:rgba(183,211,34,.20);border-color:rgba(183,211,34,.72)}
+.catchgas-slot.hit.bad{background:rgba(233,49,58,.20);border-color:rgba(233,49,58,.76)}
+@keyframes slotAppear{0%{opacity:0;transform:scale(.82)}100%{opacity:1;transform:scale(1)}}
+
+.catchgas-intro{
+  position:absolute;z-index:12;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:30px;background:linear-gradient(180deg,rgba(5,18,29,.56),rgba(5,18,29,.80));backdrop-filter:blur(5px);color:#fff
+}
+.catchgas-intro.hidden{display:none}
+.catchgas-intro h3{margin:11px 0 9px;font-family:'Barlow Condensed',sans-serif;font-size:clamp(62px,9vw,112px);line-height:.76;letter-spacing:-.04em}
+.catchgas-intro h3 em{font-style:normal;color:#B7D322}
+.catchgas-intro p{max-width:520px;margin:0 0 18px;color:#d5dde4;font-size:10px}
+.dual-mini-brand{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:20px;padding:11px 16px;border-radius:12px;background:#fff}
+.dual-mini-brand img{width:auto;height:32px;max-width:150px;object-fit:contain}
+.dual-mini-brand i{display:block;width:1px;height:26px;background:#dce1e5}
+
+.catchgas-fx-layer{position:absolute;z-index:20;inset:0;pointer-events:none}
+.catchgas-score-fx{
+  position:absolute;display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-50%);
+  animation:catchGasFx .82s cubic-bezier(.2,.8,.2,1) forwards;white-space:nowrap
+}
+.catchgas-score-fx b{font-family:'Barlow Condensed',sans-serif;font-size:clamp(44px,6vw,78px);line-height:.8;text-shadow:0 7px 24px rgba(0,0,0,.35)}
+.catchgas-score-fx span{margin-top:7px;padding:6px 9px;border-radius:999px;background:rgba(4,15,24,.84);color:#fff;font-size:7px;font-weight:800;letter-spacing:.1em}
+.catchgas-score-fx.good b{color:#B7D322}.catchgas-score-fx.bad b{color:#ff4c54}
+@keyframes catchGasFx{0%{opacity:0;transform:translate(-50%,-35%) scale(.72)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-120%) scale(.95)}}
+.catchgas-stage.catch-good:after,.catchgas-stage.catch-bad:after{content:"";position:absolute;z-index:9;inset:0;pointer-events:none;animation:stageFlash .26s ease forwards}
+.catchgas-stage.catch-good:after{background:rgba(183,211,34,.13)}
+.catchgas-stage.catch-bad:after{background:rgba(233,49,58,.18)}
+.catchgas-stage.catch-bad{animation:stageShake .24s ease}
+@keyframes stageFlash{from{opacity:1}to{opacity:0}}
+@keyframes stageShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+
+/* ALL-PAGE RESPONSIVENESS */
+@media(max-width:1280px){
+  .header-brand-logos{min-width:188px}.header-brand-logos .header-danantara{width:78px!important}.header-brand-logos .header-pgn{width:104px!important}
+  .brand-copy{display:none}
+  .nav-tabs button{padding-inline:7px}
+  .game-picker{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(orientation:portrait){
+  .splash-brand-pair{width:min(720px,88vw);gap:clamp(14px,3vw,30px)}
+  .splash-partner-logo.danantara-logo{width:38vw;max-width:280px}
+  .splash-partner-logo.pgn-logo{width:44vw;max-width:330px}
+  .splash-brand-pair .brand-divider{height:72px}
+  .home-shell{min-height:auto}
+  .game-page{padding-inline:clamp(10px,2.5vw,28px)}
+  .capture-shell,.word-shell{width:100%}
+  .memory-shell{width:100%}
+  .catchgas-stage{height:68svh;min-height:620px}
+  .catchgas-board{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(4,minmax(0,1fr))}
+}
+@media(orientation:landscape) and (max-height:760px){
+  .topbar{height:62px}
+  .game-page{padding-top:16px;padding-bottom:28px}
+  .game-titlebar{margin-bottom:10px}
+  .home-shell{min-height:calc(100vh - 190px);padding-top:30px}
+  .home-copy h1{font-size:clamp(58px,8.4vw,104px)}
+  .home-visual{min-height:390px}
+  .capture-stage{height:calc(100vh - 120px);min-height:480px}
+  .catchgas-stage{height:calc(100vh - 180px);min-height:480px}
+  .catchgas-head{margin-bottom:8px}
+  .memory-shell{padding:14px}
+  .memory-card-btn{aspect-ratio:1.25}
+}
+@media(max-width:900px){
+  .topbar{gap:8px;padding-inline:10px}
+  .header-brand-logos{min-width:166px;gap:7px}
+  .header-brand-logos .header-danantara{width:68px!important}.header-brand-logos .header-pgn{width:91px!important}
+  .nav-tabs{overflow-x:auto;justify-self:stretch;scrollbar-width:none}.nav-tabs::-webkit-scrollbar{display:none}
+  .nav-tabs button{flex:0 0 auto}
+  .game-picker{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .catchgas-head{grid-template-columns:1fr}
+  .catchgas-stats{width:100%;grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:720px){
+  .topbar{grid-template-columns:1fr auto!important}
+  .brand-dual{max-width:calc(100vw - 130px)}
+  .header-brand-logos{min-width:0;gap:5px}
+  .header-brand-logos .header-danantara{width:58px!important;height:29px!important}
+  .header-brand-logos .header-pgn{width:78px!important;height:29px!important}
+  .header-brand-logos i{height:22px}
+  .nav-tabs{grid-column:1/-1!important}
+  .splash-brand-pair{gap:12px}
+  .splash-brand-pair .brand-divider{height:54px}
+  .catchgas-shell{padding:10px;border-radius:12px}
+  .catchgas-stage{min-height:560px;height:70svh;border-radius:11px}
+  .catchgas-board{inset:12px;gap:8px}
+  .catchgas-slot{border-radius:12px;padding:7px}
+  .catchgas-head h3{font-size:39px}
+  .catchgas-head p{font-size:9px}
+  .catchgas-stats>div{padding:8px}.catchgas-stats b{font-size:22px}
+  .catchgas-legend>span{font-size:6px;padding:6px 8px}
+  .catchgas-intro{padding:18px}.catchgas-intro h3{font-size:68px}
+  .dual-mini-brand img{height:25px;max-width:108px}
+  .game-picker{grid-template-columns:1fr}
+  .word-grid{max-width:100%}
+  .memory-brand{align-items:flex-start;flex-direction:column}
+}
+@media(max-width:430px){
+  .header-brand-logos .header-danantara{width:50px!important}.header-brand-logos .header-pgn{width:68px!important}
+  .catchgas-stage{min-height:520px;height:68svh}
+  .catchgas-board{inset:9px;gap:6px}
+  .catchgas-slot{border-radius:10px}
+  .catchgas-score-fx span{font-size:6px}
+  .catchgas-stats{gap:4px}.catchgas-stats>div{padding:7px 6px}
+}
+@media(prefers-reduced-motion:reduce){
+  .splash-brand-pair,.catchgas-slot.live,.catchgas-score-fx,.catchgas-stage.catch-bad{animation:none!important}
+}
