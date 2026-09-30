@@ -170,15 +170,15 @@
               <div><b id="wordTime">120s</b><span>Time</span></div>
               <div><b id="wordFound">0</b><span>Found</span></div>
             </div>
-            <div class="word-instruction">TOUCH / CLICK + DRAG untuk menghubungkan huruf secara horizontal, vertikal, atau diagonal.</div>
+            <div class="word-instruction">TEKA-TEKI SILANG HURUF PGN — cari kata dari kiri ke kanan atau dari atas ke bawah. Touch / click lalu drag.</div>
             <div id="wordGrid" class="word-grid" aria-label="Word search grid"></div>
             <div id="wordFeedback" class="word-feedback">Tekan START GAME untuk memulai.</div>
             <div class="word-list-box"><h3>Words to Find</h3><div id="wordList" class="word-list"></div></div>
           </div>
           <aside class="word-admin">
             <div class="admin-card">
-              <span class="kicker">WORD BANK</span><h3>Tambah kata baru</h3><p>Kata tambahan tersimpan di perangkat booth dan digunakan pada ronde berikutnya.</p>
-              <div class="add-word-row"><input id="customWordInput" maxlength="16" placeholder="Contoh: MYPERTAMINA"><button onclick="addCustomWord()">ADD</button></div>
+              <span class="kicker">WORD BANK</span><h3>Tambah kata baru</h3><p>Tambahkan istilah PGN atau gas bumi. Kata tersimpan di perangkat booth dan digunakan pada ronde berikutnya.</p>
+              <div class="add-word-row"><input id="customWordInput" maxlength="16" placeholder="Contoh: GASBUMI"><button onclick="addCustomWord()">ADD</button></div>
               <div id="wordBankList" class="word-bank-list"></div>
             </div>
             <div class="admin-card reference-card"><img src="asset/Pertamina Gas Negara logo.png" alt="Pertamina Gas Negara"><span>120 SEC • TOUCH WORD SEARCH</span></div>
@@ -189,12 +189,12 @@
       <section id="memory" class="page game-page memory-page">
         <div class="game-titlebar">
           <button class="back-btn" onclick="showPage('home')">← HOME</button>
-          <div><span class="kicker">03 / ENERGY MEMORY</span><h2>MATCH THE PRODUCTS.</h2></div>
+          <div><span class="kicker">03 / ENERGY MEMORY</span><h2>MATCH THE GAS PRODUCTS.</h2></div>
           <button id="memoryStart" class="primary-btn compact" onclick="startMemory()">START GAME</button>
         </div>
         <div class="memory-shell">
-          <div class="memory-brand"><img src="asset/Pertamina Gas Negara logo.png" alt="Pertamina Gas Negara"><div><b>ENERGY MEMORY</b><span>Cocokkan setiap pasangan logo GasKita, GasKu, GasLine, dan GasLink</span></div></div>
-          <div class="memory-stats"><div><span>TIME</span><b><strong id="memoryTime">60</strong>s</b></div><div><span>MOVES</span><b id="memoryMoves">00</b></div><div><span>MATCHES</span><b><strong id="memoryMatches">0</strong>/8</b></div></div>
+          <div class="memory-brand"><img src="asset/Pertamina Gas Negara logo.png" alt="Pertamina Gas Negara"><div><b>PGN GAS MEMORY</b><span>Cocokkan setiap pasangan logo GasKita, GasKu, GasLine, dan GasLink</span></div></div>
+          <div class="memory-stats"><div><span>TIME</span><b><strong id="memoryTime">60</strong>s</b></div><div><span>MOVES</span><b id="memoryMoves">00</b></div><div><span>MATCHES</span><b><strong id="memoryMatches">0</strong>/4</b></div></div>
           <div id="memoryBoard" class="memory-board"></div>
           <div id="memoryResult" class="memory-result hidden"></div>
         </div>
