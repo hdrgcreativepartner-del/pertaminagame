@@ -106,5 +106,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('loginForm')?.addEventListener('submit',loginOperator);
   $('customWordInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addCustomWord()}});
   updateContactField();
+  setTimeout(hideSplash,CFG.splash?.duration||1800);
 });
-window.addEventListener('load',()=>setTimeout(hideSplash,CFG.splash?.duration||1900));
+setTimeout(()=>{if(document.getElementById('splash'))hideSplash()},4500);
