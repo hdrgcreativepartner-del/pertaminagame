@@ -1,0 +1,67 @@
+/* Pertamina Gas Negara rebrand */
+:root{
+  --pgn-blue:#0879BE;
+  --pgn-blue-deep:#045887;
+  --pgn-red:#E9313A;
+  --pgn-lime:#B7D322;
+}
+.brand img{width:150px!important;height:46px!important;object-fit:contain!important}
+#home{
+  background:
+    radial-gradient(circle at 76% 24%,rgba(183,211,34,.12),transparent 22%),
+    linear-gradient(116deg,#045887 0 47%,#0879BE 47% 55%,#101827 55%)!important;
+}
+.home-copy h1 em{color:var(--pgn-lime)!important}
+.login-visual{background:linear-gradient(145deg,#0879BE,#045887)!important}
+.login-lines i:first-child{background:var(--pgn-red)!important}
+.login-lines i:nth-child(2){background:#fff!important}
+.login-lines i:nth-child(3){background:var(--pgn-lime)!important}
+
+#splash.splash{
+  background:
+    radial-gradient(circle at 50% 46%,rgba(8,121,190,.055),transparent 28%),
+    linear-gradient(180deg,#fff 0%,#fbfdff 100%)!important;
+}
+#splash .splash-logo{
+  width:min(560px,76vw)!important;
+  max-height:170px!important;
+}
+#splash .accent-red{background:linear-gradient(90deg,transparent,rgba(233,49,58,.16),#E9313A,rgba(233,49,58,.14),transparent)!important}
+#splash .accent-blue{background:linear-gradient(90deg,transparent,rgba(8,121,190,.14),#0879BE,rgba(8,121,190,.16),transparent)!important}
+#splash.splash::after{background:linear-gradient(90deg,transparent,rgba(183,211,34,.08),#B7D322,rgba(183,211,34,.16),transparent)!important}
+
+#capture .legend-card>div:nth-child(2){display:none!important}
+#capture .capture-stage{box-shadow:0 24px 70px rgba(4,88,135,.14)}
+.capture-score-fx.good b{color:var(--pgn-lime)!important}
+.capture-score-fx.good span{box-shadow:0 0 0 1px rgba(183,211,34,.38)!important}
+
+.memory-brand img{
+  width:min(230px,46vw)!important;
+  height:auto!important;
+  object-fit:contain!important;
+}
+.memory-product img{
+  width:90%!important;
+  height:64%!important;
+  object-fit:contain!important;
+}
+.memory-cover img{
+  width:86%!important;
+  height:60%!important;
+  object-fit:contain!important;
+}
+.booth-result-brand img{
+  width:190px!important;
+  height:52px!important;
+  object-fit:contain!important;
+}
+.booth-result-card:before{
+  background:linear-gradient(90deg,var(--pgn-red) 0 33%,var(--pgn-blue) 33% 66%,var(--pgn-lime) 66%)!important;
+}
+.booth-result-player,.capture-result-player{color:var(--pgn-red)!important}
+
+@media(max-width:700px){
+  .brand img{width:118px!important;height:40px!important}
+  #splash .splash-logo{width:min(420px,80vw)!important}
+  .booth-result-brand img{width:160px!important}
+}
