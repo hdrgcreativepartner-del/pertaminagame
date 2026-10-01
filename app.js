@@ -2,9 +2,30 @@ const CFG=window.EVENT_CONFIG||{};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(Math.max(0,Math.round(Number(n)||0))).padStart(4,'0');
-const PLAYERS_KEY='pertaminaBoothPlayersV4',SCORES_KEY='pertaminaBoothScoresV4',CURRENT_KEY='pertaminaCurrentPlayerV4',WORDS_KEY='pertaminaCustomWordsV4';
+const PLAYERS_KEY='pertaminaBoothPlayersV4',SCORES_KEY='pertaminaBoothScoresV4',CURRENT_KEY='pertaminaCurrentPlayerV4',WORDS_KEY='pertaminaCustomWordsV4',SYSTEM_PAUSE_KEY='pgnSystemPausedV1',OPERATOR_USER_KEY='pgnOperatorUserV1';
 let currentPage='home',stream=null,faceMesh=null,faceLoopBusy=false,toastTimer=null;
 const imageCache={};
+if(CFG.capture)CFG.capture.truckAsset='asset/Truck Gas.png';
+
+const GAME_INFO={
+  word:{kicker:'01 / ENERGY WORD',title:'FIND THE WORDS',description:'Temukan kata-kata yang berkaitan dengan PGN dan energi gas di dalam susunan huruf. Hubungkan huruf menggunakan sentuhan atau mouse dan selesaikan sebanyak mungkin sebelum waktu habis.',tips:['Kiri → kanan','Atas → bawah','120 detik']},
+  capture:{kicker:'02 / CAPTURE ENERGY',title:'CAPTURE THE GAS',description:'Gerakkan kepala ke kiri, tengah, atau kanan untuk mengendalikan Truck Gas PGN. Tangkap GasKita, GasKu, GasLine, GasLink, dan Bright Gas untuk mendapat poin. Hindari produk BBM karena akan mengurangi skor.',tips:['Head tracking','Gas = + score','Fuel = − score']},
+  memory:{kicker:'03 / ENERGY MEMORY',title:'MATCH THE GAS PRODUCTS',description:'Ingat posisi setiap kartu dan temukan pasangan logo produk gas PGN yang sama. Buka dua kartu sekaligus dan cocokkan seluruh pasangan dengan langkah seefisien mungkin.',tips:['5 pairs','60 detik','Ingat posisi kartu']},
+  catchgas:{kicker:'04 / CATCH THE GAS',title:'TOUCH. REACT. SCORE.',description:'Uji kecepatan reaksimu. Sentuh atau klik produk gas PGN yang muncul untuk mendapatkan poin. Hindari produk BBM Pertamina karena setiap salah sentuh akan mengurangi skor.',tips:['Touchscreen + mouse','Gas = + score','Fuel = − score']}
+};
+let pendingGameInfo=null;
+
+function isSystemPaused(){return localStorage.getItem(SYSTEM_PAUSE_KEY)==='1'}
+function currentOperatorUser(){return (sessionStorage.getItem(OPERATOR_USER_KEY)||'').toLowerCase()}
+function isMasterAdmin(){return currentOperatorUser()==='hdrg'}
+function showMaintenance(){$('maintenanceScreen')?.classList.remove('hidden');$('loginScreen')?.classList.add('hidden');$('appRoot')?.classList.add('hidden');document.body.classList.add('maintenance-active')}
+function resetLoginCopy(){const form=$('loginForm');if(!form)return;form.dataset.mode='normal';const k=form.querySelector('.kicker'),h=form.querySelector('h1'),p=form.querySelector('p:not(.form-error)');if(k)k.textContent='OPERATOR ACCESS';if(h)h.innerHTML='EVENT<br><em>BOOTH.</em>';if(p)p.textContent='Masuk untuk menjalankan permainan, mengelola word bank, dan mengunduh data peserta.'}
+function syncMasterAdminUI(){const btn=$('systemPauseBtn'),master=isMasterAdmin();if(btn){btn.classList.toggle('hidden',!master);btn.classList.toggle('paused',isSystemPaused());const b=btn.querySelector('b'),sp=btn.querySelector('span');if(b)b.textContent=isSystemPaused()?'▶':'⏸';if(sp)sp.textContent=isSystemPaused()?'RESUME SYSTEM':'PAUSE SYSTEM'}document.body.classList.toggle('master-admin',master);document.body.classList.toggle('system-paused-master',master&&isSystemPaused())}
+function openMasterAdminLogin(){$('maintenanceScreen')?.classList.add('hidden');$('loginScreen')?.classList.remove('hidden');$('appRoot')?.classList.add('hidden');document.body.classList.remove('maintenance-active');const form=$('loginForm');if(form)form.dataset.mode='maintenance';const k=form?.querySelector('.kicker'),h=form?.querySelector('h1'),p=form?.querySelector('p:not(.form-error)');if(k)k.textContent='MASTER ADMIN ACCESS';if(h)h.innerHTML='SYSTEM<br><em>CONTROL.</em>';if(p)p.textContent='Maintenance aktif. Hanya master admin HDRG yang dapat masuk untuk mengaktifkan kembali sistem.';$('loginError').textContent='';setTimeout(()=>$('loginUser')?.focus(),120)}
+function toggleSystemPause(){if(!isMasterAdmin()){toast('Master admin only');return}if(isSystemPaused()){if(!confirm('Aktifkan kembali sistem untuk operator dan player?'))return;localStorage.removeItem(SYSTEM_PAUSE_KEY);syncMasterAdminUI();toast('System resumed')}else{if(!confirm('Pause system? Setelah logout atau refresh, user akan melihat System Maintenance.'))return;localStorage.setItem(SYSTEM_PAUSE_KEY,'1');stopAllGames();syncMasterAdminUI();toast('System paused — master admin tetap dapat mengakses sistem')}}
+function closeGameInfo(){const m=$('gameInfoModal');m?.classList.remove('show');setTimeout(()=>m?.classList.add('hidden'),220);pendingGameInfo=null}
+function confirmGameInfo(){const id=pendingGameInfo;if(!id)return;const m=$('gameInfoModal');m?.classList.remove('show');setTimeout(()=>m?.classList.add('hidden'),220);pendingGameInfo=null;setTimeout(()=>enterGame(id),100)}
+function showGameInfo(id){const info=GAME_INFO[id];if(!info){enterGame(id);return}pendingGameInfo=id;$('gameInfoKicker').textContent=info.kicker;$('gameInfoTitle').textContent=info.title;$('gameInfoDescription').textContent=info.description;$('gameInfoTips').innerHTML=info.tips.map(x=>'<span>'+esc(x)+'</span>').join('');const m=$('gameInfoModal');m?.classList.remove('hidden');requestAnimationFrame(()=>m?.classList.add('show'))}
 
 function readJSON(key,fallback=[]){try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback))}catch{return fallback}}
 function writeJSON(key,value){localStorage.setItem(key,JSON.stringify(value))}
@@ -14,15 +35,16 @@ function toast(message){const el=$('toast');if(!el)return;el.textContent=message
 function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()}
 function preloadAssets(){const list=[CFG.splash?.asset,CFG.splash?.partnerAsset,CFG.capture?.truckAsset,CFG.memoryBack,...(CFG.capture?.fuel||[]).map(x=>x.src),...(CFG.capture?.nonFuel||[]).map(x=>x.src),...(CFG.memory||[]),...(CFG.catchGas?.good||[]).map(x=>x.src),...(CFG.catchGas?.bad||[]).map(x=>x.src)];[...new Set(list.filter(Boolean))].forEach(src=>{const im=new Image();im.src=src;imageCache[src]=im})}
 
-function hideSplash(){const s=$('splash');if(!s)return;s.classList.add('splash-hide');setTimeout(()=>{s.remove();sessionStorage.getItem('pertaminaBoothAuth')==='1'?showApp():showLogin()},720)}
-function showLogin(){$('loginScreen')?.classList.remove('hidden');$('appRoot')?.classList.add('hidden');setTimeout(()=>$('loginUser')?.focus(),150)}
-function showApp(){$('loginScreen')?.classList.add('hidden');$('appRoot')?.classList.remove('hidden');restorePlayerForm();renderWordBank();prepareWordSearch();resetMemory();resetCatchGas();renderLeaderboard();showPage('home')}
-function loginOperator(e){e?.preventDefault();const user=$('loginUser').value.trim().toLowerCase(),pin=$('loginPin').value.trim(),users=CFG.auth?.users||[{user:CFG.auth?.user,pin:CFG.auth?.pin}],valid=users.some(x=>String(x?.user||'').trim().toLowerCase()===user&&String(x?.pin||'').trim()===pin);if(valid){sessionStorage.setItem('pertaminaBoothAuth','1');$('loginError').textContent='';showApp();toast('Booth access granted')}else{$('loginError').textContent='User atau PIN tidak sesuai.';$('loginPin').value='';$('loginPin').focus()}}
-function logoutOperator(){if(!confirm('Keluar dari booth operator?'))return;stopAllGames();sessionStorage.removeItem('pertaminaBoothAuth');showLogin()}
+function hideSplash(){const s=$('splash');if(!s)return;s.classList.add('splash-hide');setTimeout(()=>{s.remove();const authed=sessionStorage.getItem('pertaminaBoothAuth')==='1';if(isSystemPaused()&&!isMasterAdmin())showMaintenance();else if(authed)showApp();else showLogin()},720)}
+function showLogin(){$('maintenanceScreen')?.classList.add('hidden');$('loginScreen')?.classList.remove('hidden');$('appRoot')?.classList.add('hidden');document.body.classList.remove('maintenance-active');resetLoginCopy();setTimeout(()=>$('loginUser')?.focus(),150)}
+function showApp(){$('maintenanceScreen')?.classList.add('hidden');$('loginScreen')?.classList.add('hidden');$('appRoot')?.classList.remove('hidden');document.body.classList.remove('maintenance-active');restorePlayerForm();renderWordBank();prepareWordSearch();resetMemory();resetCatchGas();renderLeaderboard();showPage('home');syncMasterAdminUI()}
+function loginOperator(e){e?.preventDefault();const user=$('loginUser').value.trim().toLowerCase(),pin=$('loginPin').value.trim(),users=CFG.auth?.users||[{user:CFG.auth?.user,pin:CFG.auth?.pin}],valid=users.some(x=>String(x?.user||'').trim().toLowerCase()===user&&String(x?.pin||'').trim()===pin);if(valid&&isSystemPaused()&&user!=='hdrg'){$('loginError').textContent='System Maintenance aktif. Hanya master admin yang dapat masuk.';$('loginPin').value='';$('loginPin').focus();return false}if(valid){sessionStorage.setItem('pertaminaBoothAuth','1');sessionStorage.setItem(OPERATOR_USER_KEY,user);$('loginError').textContent='';showApp();toast(user==='hdrg'?'Master admin access granted':'Booth access granted');return false}else{$('loginError').textContent='User atau PIN tidak sesuai.';$('loginPin').value='';$('loginPin').focus();return false}}
+function logoutOperator(){if(!confirm('Keluar dari booth operator?'))return;stopAllGames();sessionStorage.removeItem('pertaminaBoothAuth');sessionStorage.removeItem(OPERATOR_USER_KEY);document.body.classList.remove('master-admin','system-paused-master');if(isSystemPaused())showMaintenance();else showLogin()}
 
 function setNavActive(id){document.querySelectorAll('.nav-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.page===id))}
 function showPage(id){if(id!==currentPage){if(currentPage==='capture')stopCamera();if(currentPage==='word')stopWordSearch(false);if(currentPage==='memory')stopMemory(false);if(currentPage==='catchgas')stopCatchGas()}currentPage=id;document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));setNavActive(id);if(id==='leaderboard')renderLeaderboard();window.scrollTo({top:0,behavior:'smooth'})}
-function openGame(id){if(!ensurePlayer())return;if(id==='capture')resetCapture();if(id==='word')prepareWordSearch();if(id==='memory')resetMemory();if(id==='catchgas')resetCatchGas();showPage(id)}
+function enterGame(id){if(id==='capture')resetCapture();if(id==='word')prepareWordSearch();if(id==='memory')resetMemory();if(id==='catchgas')resetCatchGas();showPage(id)}
+function openGame(id){if(!ensurePlayer())return;showGameInfo(id)}
 function stopAllGames(){stopCamera();stopWordSearch(false);stopMemory(false);stopCatchGas()}
 
 function contactMeta(type){return type==='email'?{label:'Email',placeholder:'nama@email.com',inputType:'email'}:type==='phone'?{label:'WhatsApp / Phone',placeholder:'08xx xxxx xxxx',inputType:'tel'}:{label:'Social Media',placeholder:'@username',inputType:'text'}}
@@ -221,6 +243,9 @@ function exportPlayerData(){const players=readJSON(PLAYERS_KEY,[]),scores=readJS
 
 document.addEventListener('DOMContentLoaded',()=>{
   preloadAssets();
+  if(sessionStorage.getItem('pertaminaBoothAuth')==='1'&&!sessionStorage.getItem(OPERATOR_USER_KEY))sessionStorage.setItem(OPERATOR_USER_KEY,'89 pro');
+  syncMasterAdminUI();
+  $('gameInfoModal')?.addEventListener('click',e=>{if(e.target?.id==='gameInfoModal')closeGameInfo()});
   $('loginForm')?.addEventListener('submit',loginOperator);
   $('customWordInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addCustomWord()}});
   updateContactField();
