@@ -10,10 +10,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style-v3.css">
-  <link rel="stylesheet" href="booth-rev5.css?v=20261001-pgn-r11">
-  <link rel="stylesheet" href="booth-rev7.css?v=20261001-pgn-r11">
-  <link rel="stylesheet" href="pgn-rebrand.css?v=20261001-pgn-r11">
-  <link rel="stylesheet" href="catchgas-responsive.css?v=20261001-pgn-r11">
+  <link rel="stylesheet" href="booth-rev5.css?v=20261001-pgn-r12">
+  <link rel="stylesheet" href="booth-rev7.css?v=20261001-pgn-r12">
+  <link rel="stylesheet" href="pgn-rebrand.css?v=20261001-pgn-r12">
+  <link rel="stylesheet" href="catchgas-responsive.css?v=20261001-pgn-r12">
+  <link rel="stylesheet" href="master-admin-ui.css?v=20261001-pgn-r12">
 </head>
 <body>
   <div id="splash" class="splash" aria-label="Pertamina Gas Negara">
@@ -26,6 +27,23 @@
     </div>
     <div class="splash-loader"><i></i></div>
   </div>
+
+  <section id="maintenanceScreen" class="maintenance-screen hidden" aria-live="polite">
+    <div class="maintenance-card">
+      <div class="maintenance-visual" aria-hidden="true">
+        <div class="maintenance-tool">⌁</div>
+        <div class="maintenance-blocks"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="maintenance-brand-pair">
+        <img src="asset/Danantara_Indonesia logo.png" alt="Danantara Indonesia">
+        <i></i>
+        <img src="asset/Pertamina Gas Negara logo.png" alt="Pertamina Gas Negara">
+      </div>
+      <h1>System Maintenance</h1>
+      <p>The interactive booth is temporarily paused for maintenance.<br>Please wait a moment.</p>
+      <button class="maintenance-admin-btn" type="button" onclick="openMasterAdminLogin()">MASTER ADMIN</button>
+    </div>
+  </section>
 
   <section id="loginScreen" class="login-screen hidden">
     <div class="login-panel">
@@ -64,6 +82,7 @@
         <button data-page="leaderboard" onclick="showPage('leaderboard')"><b>♛</b><span>Leaderboard</span></button>
       </nav>
       <div class="header-actions">
+        <button id="systemPauseBtn" class="header-btn system-pause admin-only hidden" onclick="toggleSystemPause()" title="Pause system"><b>⏸</b><span>PAUSE SYSTEM</span></button>
         <button class="header-btn export" onclick="exportPlayerData()" title="Download player data"><span>XLSX</span></button>
         <button class="header-btn" onclick="toggleFullscreen()" title="Fullscreen"><b>⛶</b><span>FULLSCREEN</span></button>
         <button class="header-btn logout" onclick="logoutOperator()" title="Log out"><b>↗</b><span>LOG OUT</span></button>
@@ -104,10 +123,11 @@
             <div class="hero-ring ring-a"></div>
             <div class="hero-ring ring-b"></div>
             <div class="hero-rotor">
-              <img class="hero-truck" src="asset/Truck Tanki.png" alt="Truck Tanki Pertamina">
-              <div class="orbit-label label-one"><span>HEAD TRACKING</span></div>
-              <div class="orbit-label label-two"><span>GAS CAPTURE</span></div>
-              <div class="orbit-label label-three"><span>LIVE SCORE</span></div>
+              <img class="hero-truck" src="asset/Truck Gas.png" alt="Truck Gas Pertamina Gas Negara">
+              <div class="orbit-label label-one"><span>ENERGY WORD</span></div>
+              <div class="orbit-label label-two"><span>CAPTURE ENERGY</span></div>
+              <div class="orbit-label label-three"><span>ENERGY MEMORY</span></div>
+              <div class="orbit-label label-four"><span>CATCH THE GAS</span></div>
             </div>
             <div class="hero-center-dot"></div>
           </div>
@@ -282,11 +302,28 @@
     <footer><span>PERTAMINA GAS NEGARA</span><span>GAS ENERGY EXPERIENCE • EVENT BOOTH</span></footer>
   </div>
 
+  <div id="gameInfoModal" class="game-info-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="gameInfoTitle">
+    <div class="game-info-card">
+      <button class="game-info-close" type="button" onclick="closeGameInfo()" aria-label="Close">×</button>
+      <div class="game-info-brand">
+        <img src="asset/Danantara_Indonesia logo.png" alt="Danantara Indonesia">
+        <i></i>
+        <img src="asset/Pertamina Gas Negara logo.png" alt="Pertamina Gas Negara">
+      </div>
+      <span id="gameInfoKicker" class="kicker">HOW TO PLAY</span>
+      <h2 id="gameInfoTitle">GAME</h2>
+      <p id="gameInfoDescription"></p>
+      <div id="gameInfoTips" class="game-info-tips"></div>
+      <button class="primary-btn game-info-understand" type="button" onclick="confirmGameInfo()">MENGERTI <span>→</span></button>
+    </div>
+  </div>
+
   <div id="toast" class="toast"></div>
-  <script src="game-config.js?v=20261001-pgn-r11"></script>
-  <script src="app.js?v=20261001-pgn-r11"></script>
-  <script src="booth-rev5.js?v=20261001-pgn-r11"></script>
-  <script src="booth-rev7.js?v=20261001-pgn-r11"></script>
+  <script src="game-config.js?v=20261001-pgn-r12"></script>
+  <script src="app.js?v=20261001-pgn-r12"></script>
+  <script src="booth-rev5.js?v=20261001-pgn-r12"></script>
+  <script src="booth-rev7.js?v=20261001-pgn-r12"></script>
+  <script src="master-admin-ui.js?v=20261001-pgn-r12"></script>
   <script async src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
   <script async src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </body>
