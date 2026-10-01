@@ -38,16 +38,42 @@ function shuffle(arr){return [...arr].sort(()=>Math.random()-.5)}
 function uuid(){return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,9)}`}
 function toast(message){const el=$('toast');if(!el)return;el.textContent=message;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2200)}
 function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()}
-function preloadAssets(){const list=[CFG.splash?.asset,CFG.splash?.partnerAsset,CFG.capture?.truckAsset,...Object.values(CAPTURE_TRUCK_ASSETS),CFG.memoryBack,...(CFG.capture?.fuel||[]).map(x=>x.src),...(CFG.capture?.nonFuel||[]).map(x=>x.src),...(CFG.memory||[]),...(CFG.catchGas?.good||[]).map(x=>x.src),...(CFG.catchGas?.bad||[]).map(x=>x.src)];[...new Set(list.filter(Boolean))].forEach(src=>{const im=new Image();im.src=src;imageCache[src]=im})}
+let assetsPreloaded=false,faceMeshLibPromise=null,xlsxLibPromise=null;
+function preloadAssets(){
+  if(assetsPreloaded)return;
+  assetsPreloaded=true;
+  const list=[CFG.capture?.truckAsset,...Object.values(CAPTURE_TRUCK_ASSETS),CFG.memoryBack,...(CFG.capture?.fuel||[]).map(x=>x.src),...(CFG.capture?.nonFuel||[]).map(x=>x.src),...(CFG.memory||[]),...(CFG.catchGas?.good||[]).map(x=>x.src),...(CFG.catchGas?.bad||[]).map(x=>x.src)];
+  [...new Set(list.filter(Boolean))].forEach(src=>{const im=new Image();im.decoding='async';im.src=src;imageCache[src]=im});
+}
+function loadScriptOnce(src,id){
+  return new Promise((resolve,reject)=>{
+    const existing=document.getElementById(id);
+    if(existing){
+      if((id==='faceMeshLib'&&window.FaceMesh)||(id==='xlsxLib'&&window.XLSX))resolve();
+      else existing.addEventListener('load',resolve,{once:true});
+      return;
+    }
+    const sc=document.createElement('script');sc.id=id;sc.src=src;sc.async=true;sc.onload=resolve;sc.onerror=reject;document.head.appendChild(sc);
+  });
+}
+function ensureFaceMeshLib(){if(window.FaceMesh)return Promise.resolve();if(!faceMeshLibPromise)faceMeshLibPromise=loadScriptOnce('https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js','faceMeshLib');return faceMeshLibPromise}
+function ensureXLSXLib(){if(window.XLSX)return Promise.resolve();if(!xlsxLibPromise)xlsxLibPromise=loadScriptOnce('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js','xlsxLib');return xlsxLibPromise}
+function syncHomeBackgroundVideo(play){
+  const v=$('homeBgVideo');if(!v)return;
+  if(play){
+    if(!v.src){v.src=v.dataset.src||'';v.load()}
+    const p=v.play();p?.catch?.(()=>{});
+  }else v.pause();
+}
 
 function hideSplash(){const s=$('splash');if(!s)return;s.classList.add('splash-hide');setTimeout(()=>{s.remove();const authed=sessionStorage.getItem('pertaminaBoothAuth')==='1';if(isSystemPaused()&&!isMasterAdmin())showMaintenance();else if(authed)showApp();else showLogin()},720)}
 function showLogin(){$('maintenanceScreen')?.classList.add('hidden');$('loginScreen')?.classList.remove('hidden');$('appRoot')?.classList.add('hidden');document.body.classList.remove('maintenance-active');resetLoginCopy();setTimeout(()=>$('loginUser')?.focus(),150)}
-function showApp(){$('maintenanceScreen')?.classList.add('hidden');$('loginScreen')?.classList.add('hidden');$('appRoot')?.classList.remove('hidden');document.body.classList.remove('maintenance-active');restorePlayerForm();renderWordBank();prepareWordSearch();resetMemory();resetCatchGas();renderLeaderboard();showPage('home');syncMasterAdminUI()}
+function showApp(){$('maintenanceScreen')?.classList.add('hidden');$('loginScreen')?.classList.add('hidden');$('appRoot')?.classList.remove('hidden');document.body.classList.remove('maintenance-active');preloadAssets();restorePlayerForm();renderWordBank();prepareWordSearch();resetMemory();resetCatchGas();renderLeaderboard();showPage('home');syncMasterAdminUI();setTimeout(()=>syncHomeBackgroundVideo(true),120)}
 function loginOperator(e){e?.preventDefault();const user=$('loginUser').value.trim().toLowerCase(),pin=$('loginPin').value.trim(),users=CFG.auth?.users||[{user:CFG.auth?.user,pin:CFG.auth?.pin}],valid=users.some(x=>String(x?.user||'').trim().toLowerCase()===user&&String(x?.pin||'').trim()===pin);if(valid&&isSystemPaused()&&user!=='hdrg'){$('loginError').textContent='System Maintenance aktif. Hanya master admin yang dapat masuk.';$('loginPin').value='';$('loginPin').focus();return false}if(valid){sessionStorage.setItem('pertaminaBoothAuth','1');sessionStorage.setItem(OPERATOR_USER_KEY,user);$('loginError').textContent='';showApp();toast(user==='hdrg'?'Master admin access granted':'Booth access granted');return false}else{$('loginError').textContent='User atau PIN tidak sesuai.';$('loginPin').value='';$('loginPin').focus();return false}}
 function logoutOperator(){if(!confirm('Keluar dari booth operator?'))return;stopAllGames();sessionStorage.removeItem('pertaminaBoothAuth');sessionStorage.removeItem(OPERATOR_USER_KEY);document.body.classList.remove('master-admin','system-paused-master');if(isSystemPaused())showMaintenance();else showLogin()}
 
 function setNavActive(id){document.querySelectorAll('.nav-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.page===id))}
-function showPage(id){if(id!==currentPage){if(currentPage==='capture')stopCamera();if(currentPage==='word')stopWordSearch(false);if(currentPage==='memory')stopMemory(false);if(currentPage==='catchgas')stopCatchGas()}currentPage=id;document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));setNavActive(id);if(id==='leaderboard')renderLeaderboard();window.scrollTo({top:0,behavior:'smooth'})}
+function showPage(id){if(id!==currentPage){if(currentPage==='capture')stopCamera();if(currentPage==='word')stopWordSearch(false);if(currentPage==='memory')stopMemory(false);if(currentPage==='catchgas')stopCatchGas()}currentPage=id;document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));setNavActive(id);syncHomeBackgroundVideo(id==='home');if(id==='leaderboard')renderLeaderboard();window.scrollTo({top:0,behavior:'smooth'})}
 function enterGame(id){if(id==='capture')resetCapture();if(id==='word')prepareWordSearch();if(id==='memory')resetMemory();if(id==='catchgas')resetCatchGas();showPage(id)}
 function openGame(id){if(!ensurePlayer())return;showGameInfo(id)}
 function stopAllGames(){stopCamera();stopWordSearch(false);stopMemory(false);stopCatchGas()}
@@ -70,7 +96,19 @@ function updateCaptureHud(){const lane=['LEFT','CENTER','RIGHT'][capture.targetL
 function resetCapture(){clearInterval(capture.timer);cancelAnimationFrame(capture.raf);Object.assign(capture,{running:false,score:0,time:CFG.capture?.duration||45,combo:1,objects:[],lastSpawn:0,roadOffset:0,targetLane:1,truckLane:1,faceX:.5});$('trackingState').textContent='STANDBY';$('cameraPrompt').classList.remove('hidden');$('captureResult').classList.add('hidden');updateCaptureHud();requestAnimationFrame(resizeCapture)}
 function enterCaptureFocus(){document.body.classList.add('capture-focus');const stage=$('captureStage');if(stage&&!document.fullscreenElement){try{const p=stage.requestFullscreen?.();p?.catch?.(()=>{})}catch{}}requestAnimationFrame(resizeCapture)}
 async function exitCaptureFocus(){document.body.classList.remove('capture-focus');if(document.fullscreenElement){try{await document.exitFullscreen?.()}catch{}}setTimeout(resizeCapture,80)}
-async function enableCamera(){if(!ensurePlayer())return;enterCaptureFocus();try{if(!navigator.mediaDevices?.getUserMedia)throw new Error('Camera unavailable');stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});$('webcam').srcObject=stream;await $('webcam').play();initFaceMesh();$('cameraPrompt').classList.add('hidden');await countdown(3);startCaptureRound()}catch(err){$('trackingState').textContent='CAMERA ERROR';await exitCaptureFocus();toast('Kamera tidak dapat digunakan. Izinkan camera permission dan gunakan HTTPS.')}}
+async function enableCamera(){
+  if(!ensurePlayer())return;
+  enterCaptureFocus();
+  try{
+    if(!navigator.mediaDevices?.getUserMedia)throw new Error('Camera unavailable');
+    $('trackingState').textContent='LOADING TRACKER';
+    await ensureFaceMeshLib();
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});
+    $('webcam').srcObject=stream;await $('webcam').play();initFaceMesh();$('cameraPrompt').classList.add('hidden');await countdown(3);startCaptureRound();
+  }catch(err){
+    $('trackingState').textContent='CAMERA ERROR';await exitCaptureFocus();toast('Kamera/tracker tidak dapat digunakan. Periksa koneksi, camera permission, dan HTTPS.');
+  }
+}
 function countdown(n){return new Promise(resolve=>{let i=n;const tick=()=>{if(i<=0){$('captureCountdown').textContent='';resolve();return}$('captureCountdown').textContent=i--;setTimeout(tick,700)};tick()})}
 function initFaceMesh(){if(faceMesh||!window.FaceMesh)return;faceMesh=new FaceMesh({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`});faceMesh.setOptions({maxNumFaces:1,refineLandmarks:false,minDetectionConfidence:.55,minTrackingConfidence:.55});faceMesh.onResults(onFaceResults)}
 async function processFaceFrame(){if(!capture.running||!stream||!faceMesh)return;if(!faceLoopBusy){faceLoopBusy=true;try{await faceMesh.send({image:$('webcam')})}catch{}faceLoopBusy=false}if(capture.running)requestAnimationFrame(processFaceFrame)}
@@ -273,10 +311,18 @@ function stopCatchGas(){
 /* LEADERBOARD + EXPORT */
 function renderLeaderboard(){const players=readJSON(PLAYERS_KEY,[]),scores=readJSON(SCORES_KEY,[]),best=[...scores].sort((a,b)=>b.score-a.score).slice(0,12);$('playerCount').textContent=players.length;$('scoreCount').textContent=scores.length;$('leaderboardList').innerHTML=best.length?best.map((x,i)=>`<div class="rank-row"><span class="rank-num">${String(i+1).padStart(2,'0')}</span><div><b>${esc(x.name)}</b><small>${esc(x.game)} • ${esc(contactMeta(x.contactType).label)}</small></div><strong>${x.score}</strong></div>`).join(''):'<div class="empty-state">Belum ada score. Mulai game untuk mengisi leaderboard.</div>'}
 function clearLeaderboard(){if(confirm('Hapus semua score pada perangkat ini?')){localStorage.removeItem(SCORES_KEY);renderLeaderboard();toast('Scores dihapus')}}
-function exportPlayerData(){const players=readJSON(PLAYERS_KEY,[]),scores=readJSON(SCORES_KEY,[]);if(!players.length){toast('Belum ada data player');return}if(!window.XLSX){toast('Excel library belum tersedia');return}const playerRows=players.map(p=>({'Player ID':p.id,'Name':p.name,'Contact Type':contactMeta(p.contactType).label,'Contact Detail':p.contactValue,'Registered At':p.createdAt,'Updated At':p.updatedAt})),scoreRows=scores.map(s=>({'Player ID':s.playerId,'Name':s.name,'Contact Type':contactMeta(s.contactType).label,'Contact Detail':s.contactValue,'Game':s.game,'Score':s.score,'Played At':s.timestamp})),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(playerRows),'Players');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(scoreRows),'Scores');const d=new Date(),date=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;XLSX.writeFile(wb,`PGN-Booth-Players-${date}.xlsx`)}
+async function exportPlayerData(){
+  const players=readJSON(PLAYERS_KEY,[]),scores=readJSON(SCORES_KEY,[]);
+  if(!players.length){toast('Belum ada data player');return}
+  try{toast('Menyiapkan file Excel...');await ensureXLSXLib()}catch{toast('Excel library gagal dimuat');return}
+  const playerRows=players.map(p=>({'Player ID':p.id,'Name':p.name,'Contact Type':contactMeta(p.contactType).label,'Contact Detail':p.contactValue,'Registered At':p.createdAt,'Updated At':p.updatedAt}));
+  const scoreRows=scores.map(r=>({'Player ID':r.playerId,'Name':r.name,'Contact Type':contactMeta(r.contactType).label,'Contact Detail':r.contactValue,'Game':r.game,'Score':r.score,'Played At':r.timestamp}));
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(playerRows),'Players');XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(scoreRows),'Scores');
+  const d=new Date(),date=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  XLSX.writeFile(wb,'PGN-Booth-Players-'+date+'.xlsx');
+}
 
 document.addEventListener('DOMContentLoaded',()=>{
-  preloadAssets();
   if(sessionStorage.getItem('pertaminaBoothAuth')==='1'&&!sessionStorage.getItem(OPERATOR_USER_KEY))sessionStorage.setItem(OPERATOR_USER_KEY,'89 pro');
   syncMasterAdminUI();
   $('gameInfoModal')?.addEventListener('click',e=>{if(e.target?.id==='gameInfoModal')closeGameInfo()});
