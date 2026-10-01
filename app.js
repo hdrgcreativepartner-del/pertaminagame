@@ -95,14 +95,14 @@ function drawTruck(ctx,road){
   const t=.93;
   capture.truckLane+=(capture.targetLane-capture.truckLane)*.075;
   const x=laneX(road,capture.truckLane,t),laneW=laneWidthAt(road,t);
-  const truckW=Math.min(220,laneW*.74);
+  const truckW=Math.min(285,laneW*.88);
   const ratio=im?.naturalWidth?im.naturalHeight/im.naturalWidth:.72;
   const truckH=truckW*ratio;
-  const y=capture.h-truckH-6;
+  const y=capture.h-truckH-2;
   ctx.save();
   ctx.shadowColor='rgba(0,0,0,.70)';
-  ctx.shadowBlur=24;
-  ctx.shadowOffsetY=10;
+  ctx.shadowBlur=28;
+  ctx.shadowOffsetY=12;
   if(im?.complete&&im.naturalWidth)ctx.drawImage(im,x-truckW/2,y,truckW,truckH);
   else{ctx.fillStyle='#0070BA';ctx.fillRect(x-truckW/2,y,truckW,truckH)}
   ctx.restore();
