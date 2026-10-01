@@ -101,7 +101,7 @@
 
     drawGameObject=function(ctx,o,road){
       o.y+=o.speed;
-      const t=Math.max(0,Math.min(1,o.y)),x=laneX(road,o.lane,t),y=o.y*capture.h,im=revImages[o.item.src];
+      const t=Math.max(0,Math.min(1,o.y)),x=laneX(road,o.lane,t),y=o.y*capture.h,im=revImages[o.item.src]||imageCache[o.item.src];
       const laneW=laneWidthAt(road,t),maxW=laneW*.58,maxH=42+42*t;
       let w=Math.min(maxW,72+30*t),h=Math.min(maxH,68+24*t);
       if(im?.naturalWidth){const ratio=im.naturalWidth/im.naturalHeight;w=Math.min(maxW,maxH*ratio);h=w/ratio;}
@@ -114,7 +114,7 @@
 
     drawTruck=function(ctx,road){
       const sprite=capture.targetLane===0?'asset/Truck Gas left.png':capture.targetLane===2?'asset/Truck Gas right.png':'asset/Truck Gas center.png';
-      const im=revImages[sprite]||revImages['asset/Truck Gas center.png']||revImages[CFG.capture?.truckAsset],t=.93;
+      const im=revImages[sprite]||imageCache[sprite]||revImages['asset/Truck Gas center.png']||imageCache['asset/Truck Gas center.png']||revImages[CFG.capture?.truckAsset]||imageCache[CFG.capture?.truckAsset],t=.93;
       capture.truckLane+=(capture.targetLane-capture.truckLane)*.095;
       const x=laneX(road,capture.truckLane,t),laneW=laneWidthAt(road,t),truckW=Math.min(300,laneW*.90);
       const ratio=im?.naturalWidth?im.naturalHeight/im.naturalWidth:.72,truckH=truckW*ratio;
@@ -154,7 +154,7 @@
     const captureTitle=document.querySelector('#cameraPrompt h3');if(captureTitle)captureTitle.innerHTML='MOVE YOUR HEAD.<br><em>CAPTURE THE GAS.</em>';
   }
 
-  function install(){hardenLogin();preloadRevAssets();installWordSearchRules();installCaptureRenderer();refreshCopy();}
+  function install(){hardenLogin();installWordSearchRules();installCaptureRenderer();refreshCopy();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
   setTimeout(install,250);setTimeout(install,1000);
 })();
