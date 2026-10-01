@@ -139,3 +139,79 @@ button,input,select{touch-action:manipulation}
 @media(prefers-reduced-motion:reduce){
   .hero-truck,.game-info-card{animation:none!important;transition:none!important}
 }
+
+
+/* LANDING VIDEO BACKGROUND — lazy MP4 */
+#home{
+  position:relative!important;
+  isolation:isolate;
+  overflow:hidden;
+  background:#000!important;
+}
+.home-bg-video{
+  position:absolute;
+  z-index:0;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center center;
+  background:#000;
+  pointer-events:none;
+}
+.home-video-overlay{
+  position:absolute;
+  z-index:1;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(0,0,0,.84) 0%,rgba(0,0,0,.61) 34%,rgba(0,0,0,.22) 62%,rgba(0,0,0,.30) 100%),
+    linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.34));
+}
+#home .home-shell,
+#home .game-picker{
+  position:relative;
+  z-index:3;
+}
+#home .home-visual{
+  position:relative;
+  z-index:4;
+  background:transparent!important;
+}
+.hero-truck-anchor{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:1px;
+  height:1px;
+  pointer-events:none;
+}
+#home .home-copy>p{color:rgba(255,255,255,.82)!important}
+#home .player-form-card{
+  background:rgba(255,255,255,.94)!important;
+  box-shadow:0 24px 70px rgba(0,0,0,.26)!important;
+  backdrop-filter:blur(12px);
+}
+#home .game-picker button{
+  background:rgba(6,14,21,.56)!important;
+  border-color:rgba(255,255,255,.20)!important;
+}
+#home .game-picker button:hover{
+  background:#fff!important;
+  color:#101827!important;
+}
+
+@media(orientation:portrait){
+  .home-bg-video{
+    object-fit:cover;
+    object-position:center center;
+  }
+  .home-video-overlay{
+    background:
+      linear-gradient(180deg,rgba(0,0,0,.68) 0%,rgba(0,0,0,.44) 46%,rgba(0,0,0,.60) 100%);
+  }
+}
+@media(max-width:720px){
+  .home-bg-video{object-position:58% center}
+  .home-video-overlay{background:rgba(0,0,0,.58)}
+}
