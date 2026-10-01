@@ -75,6 +75,10 @@ body.system-paused-master:before{
   animation:truckGasFloat 7.2s ease-in-out infinite!important;
   transform-origin:50% 50%!important;filter:drop-shadow(0 26px 30px rgba(0,0,0,.24))
 }
+.hero-truck-video{
+  display:block!important;background:transparent!important;pointer-events:none!important;
+  object-fit:contain!important;mix-blend-mode:normal!important
+}
 @keyframes truckGasFloat{
   0%,100%{transform:translate(-50%,-50%) scale(.94)}
   50%{transform:translate(-50%,-50%) scale(1.07)}
