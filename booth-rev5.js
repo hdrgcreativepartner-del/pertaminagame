@@ -14,19 +14,7 @@
     form.dataset.rev5Login='1';
     const submit=(event)=>{
       event?.preventDefault();event?.stopPropagation();event?.stopImmediatePropagation?.();
-      const cfg=window.EVENT_CONFIG||{};
-      const user=(document.getElementById('loginUser')?.value||'').trim().toLowerCase();
-      const pin=(document.getElementById('loginPin')?.value||'').trim();
-      const users=cfg.auth?.users||[{user:cfg.auth?.user,pin:cfg.auth?.pin}];
-      const valid=users.some(x=>String(x?.user||'').trim().toLowerCase()===user&&String(x?.pin||'').trim()===pin);
-      if(valid){
-        sessionStorage.setItem('pertaminaBoothAuth','1');
-        const err=document.getElementById('loginError');if(err)err.textContent='';
-        if(typeof showApp==='function')showApp();
-        return false;
-      }
-      const err=document.getElementById('loginError');if(err)err.textContent='User atau PIN tidak sesuai.';
-      const pinEl=document.getElementById('loginPin');if(pinEl){pinEl.value='';pinEl.focus();}
+      if(typeof loginOperator==='function')return loginOperator(event);
       return false;
     };
     form.setAttribute('action','javascript:void(0)');form.onsubmit=submit;form.addEventListener('submit',submit,true);
