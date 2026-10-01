@@ -85,28 +85,34 @@ function drawRoad(ctx,w,h){const r=roadGeometry(w,h),topL=r.cx-r.topW/2,topR=r.c
 function spawnWave(){const fuel=CFG.capture?.fuel||[],bad=CFG.capture?.nonFuel||[];if(!fuel.length&&!bad.length)return;const badChance=bad.length?(CFG.capture?.nonFuelChance??.34):0,lanes=shuffle([0,1,2]),count=Math.random()<.72?2:1;for(let i=0;i<count;i++){const isBad=Math.random()<badChance,pool=isBad?bad:fuel,item=pool[Math.floor(Math.random()*pool.length)];if(!item)continue;capture.objects.push({lane:lanes[i],y:-.08,speed:.0037+Math.random()*.0012,item,bad:isBad,rot:(Math.random()-.5)*.035})}}
 function drawGameObject(ctx,o,road){o.y+=o.speed;const t=Math.max(0,Math.min(1,o.y)),x=laneX(road,o.lane,t),y=o.y*capture.h,im=imageCache[o.item.src],laneW=laneWidthAt(road,t),maxW=laneW*.54,maxH=30+30*t;let w=maxW*.72,h=maxH;if(im?.naturalWidth){const ratio=im.naturalWidth/im.naturalHeight;w=Math.min(maxW,maxH*ratio);h=w/ratio}ctx.save();ctx.translate(x,y);ctx.rotate(o.rot);ctx.shadowColor=o.bad?'rgba(214,25,31,.42)':'rgba(187,215,96,.4)';ctx.shadowBlur=8+8*t;if(im?.complete&&im.naturalWidth)ctx.drawImage(im,-w/2,-h/2,w,h);else{ctx.fillStyle=o.bad?'#D6191F':'#BBD760';ctx.beginPath();ctx.arc(0,0,Math.min(w,h)*.35,0,Math.PI*2);ctx.fill()}ctx.restore();return{x,y,w,h}}
 function captureTruckAsset(){
-  if(capture.targetLane===0)return CAPTURE_TRUCK_ASSETS.left;
-  if(capture.targetLane===2)return CAPTURE_TRUCK_ASSETS.right;
+  if(capture.truckLane<.66)return CAPTURE_TRUCK_ASSETS.left;
+  if(capture.truckLane>1.34)return CAPTURE_TRUCK_ASSETS.right;
   return CAPTURE_TRUCK_ASSETS.center;
 }
 function drawTruck(ctx,road){
+  const t=.93;
+  capture.truckLane+=(capture.targetLane-capture.truckLane)*.095;
   const sprite=captureTruckAsset();
   const im=imageCache[sprite]||imageCache[CAPTURE_TRUCK_ASSETS.center]||imageCache[CFG.capture?.truckAsset];
-  const t=.93;
-  capture.truckLane+=(capture.targetLane-capture.truckLane)*.075;
   const x=laneX(road,capture.truckLane,t),laneW=laneWidthAt(road,t);
-  const truckW=Math.min(285,laneW*.88);
+  const truckW=Math.min(300,laneW*.90);
   const ratio=im?.naturalWidth?im.naturalHeight/im.naturalWidth:.72;
   const truckH=truckW*ratio;
-  const y=capture.h-truckH-2;
+  const now=performance.now();
+  const vibrationX=Math.sin(now*.038)*1.15+Math.sin(now*.071)*.55;
+  const vibrationY=Math.sin(now*.052)*1.9+Math.sin(now*.093)*.65;
+  const vibrationRot=Math.sin(now*.044)*.0042;
+  const drawX=x+vibrationX,drawY=capture.h-truckH-2+vibrationY;
   ctx.save();
+  ctx.translate(drawX,drawY+truckH*.5);
+  ctx.rotate(vibrationRot);
   ctx.shadowColor='rgba(0,0,0,.70)';
   ctx.shadowBlur=28;
   ctx.shadowOffsetY=12;
-  if(im?.complete&&im.naturalWidth)ctx.drawImage(im,x-truckW/2,y,truckW,truckH);
-  else{ctx.fillStyle='#0070BA';ctx.fillRect(x-truckW/2,y,truckW,truckH)}
+  if(im?.complete&&im.naturalWidth)ctx.drawImage(im,-truckW/2,-truckH*.5,truckW,truckH);
+  else{ctx.fillStyle='#0070BA';ctx.fillRect(-truckW/2,-truckH*.5,truckW,truckH)}
   ctx.restore();
-  return{x,y:y+truckH*.5,w:truckW,h:truckH,lane:capture.truckLane}
+  return{x,y:capture.h-truckH*.5-2,w:truckW,h:truckH,lane:capture.truckLane}
 }
 function captureLoop(ts){if(!capture.running)return;const ctx=capture.ctx;if(!ctx){resizeCapture();capture.raf=requestAnimationFrame(captureLoop);return}ctx.clearRect(0,0,capture.w,capture.h);const road=drawRoad(ctx,capture.w,capture.h);if(!capture.lastSpawn||ts-capture.lastSpawn>(CFG.capture?.spawnEvery||880)){spawnWave();capture.lastSpawn=ts}const truck=drawTruck(ctx,road);for(let i=capture.objects.length-1;i>=0;i--){const o=capture.objects[i],p=drawGameObject(ctx,o,road),sameLane=Math.abs(o.lane-truck.lane)<.43,hit=sameLane&&o.y>.82&&o.y<1.03&&Math.abs(p.x-truck.x)<Math.max(24,truck.w*.42);if(hit){collectCapture(o);capture.objects.splice(i,1)}else if(o.y>1.1)capture.objects.splice(i,1)}capture.raf=requestAnimationFrame(captureLoop)}
 function collectCapture(o){const points=Number(o.item.points)||0;if(o.bad){capture.score=Math.max(0,capture.score+points);capture.combo=1;navigator.vibrate?.([30,20,30])}else{capture.score+=Math.round(points*Math.max(1,capture.combo));capture.combo=Math.min(7,capture.combo+.45)}updateCaptureHud();const f=$('hitFlash');f.className=`hit-flash ${o.bad?'bad':'good'}`;setTimeout(()=>f.className='hit-flash',220)}
