@@ -171,21 +171,20 @@ button,input,select{touch-action:manipulation}
   z-index:1;
   left:50%;
   top:50%;
-  width:min(510px,41vw);
-  aspect-ratio:1;
+  width:min(620px,50vw);
+  aspect-ratio:16/9;
   transform:translate(-50%,-50%);
-  border-radius:50%;
-  overflow:hidden;
-  background:#000;
-  box-shadow:0 0 90px rgba(183,211,34,.08);
+  overflow:visible;
+  background:transparent;
+  pointer-events:none;
 }
 .home-bg-video{
   width:100%;
   height:100%;
   display:block;
-  object-fit:cover;
+  object-fit:contain;
   object-position:center center;
-  background:#000;
+  background:transparent;
   pointer-events:none;
 }
 .hero-ring{z-index:4!important}
@@ -237,21 +236,25 @@ button,input,select{touch-action:manipulation}
 @media(orientation:portrait){
   #home .home-shell{grid-template-columns:1fr!important}
   #home .home-visual{min-height:clamp(390px,52svh,620px)!important}
-  .hero-video-disc,.ring-a,.hero-orbit-dot-track{width:min(78vw,520px)!important}
+  .hero-video-disc{width:min(92vw,640px)!important}
+  .ring-a,.hero-orbit-dot-track{width:min(78vw,520px)!important}
   .ring-b{width:min(60vw,400px)!important}
-  .home-bg-video{object-fit:cover;object-position:center}
+  .home-bg-video{object-fit:contain;object-position:center}
 }
 @media(orientation:landscape) and (max-height:760px){
-  .hero-video-disc,.ring-a,.hero-orbit-dot-track{width:min(450px,38vw)!important}
+  .hero-video-disc{width:min(560px,46vw)!important}
+  .ring-a,.hero-orbit-dot-track{width:min(450px,38vw)!important}
   .ring-b{width:min(340px,29vw)!important}
 }
 @media(max-width:720px){
-  .hero-video-disc,.ring-a,.hero-orbit-dot-track{width:min(82vw,460px)!important}
+  .hero-video-disc{width:min(94vw,560px)!important}
+  .ring-a,.hero-orbit-dot-track{width:min(82vw,460px)!important}
   .ring-b{width:min(64vw,350px)!important}
   .hero-orbit-dot-track i{width:8px;height:8px;top:-4px}
 }
 @media(max-width:430px){
-  .hero-video-disc,.ring-a,.hero-orbit-dot-track{width:min(86vw,390px)!important}
+  .hero-video-disc{width:min(96vw,500px)!important}
+  .ring-a,.hero-orbit-dot-track{width:min(86vw,390px)!important}
   .ring-b{width:min(68vw,300px)!important}
 }
 @media(prefers-reduced-motion:reduce){
