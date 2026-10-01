@@ -116,7 +116,7 @@
       const sprite=capture.targetLane===0?'asset/Truck Gas left.png':capture.targetLane===2?'asset/Truck Gas right.png':'asset/Truck Gas center.png';
       const im=revImages[sprite]||imageCache[sprite]||revImages['asset/Truck Gas center.png']||imageCache['asset/Truck Gas center.png']||revImages[CFG.capture?.truckAsset]||imageCache[CFG.capture?.truckAsset],t=.93;
       capture.truckLane+=(capture.targetLane-capture.truckLane)*.095;
-      const x=laneX(road,capture.truckLane,t),laneW=laneWidthAt(road,t),truckW=Math.min(300,laneW*.90);
+      const x=laneX(road,capture.truckLane,t),laneW=laneWidthAt(road,t),centerScale=sprite==='asset/Truck Gas center.png'?.82:1,truckW=Math.min(300,laneW*.90)*centerScale;
       const ratio=im?.naturalWidth?im.naturalHeight/im.naturalWidth:.72,truckH=truckW*ratio;
       const now=performance.now(),vibrationX=Math.sin(now*.038)*1.15+Math.sin(now*.071)*.55,vibrationY=Math.sin(now*.052)*1.9+Math.sin(now*.093)*.65,vibrationRot=Math.sin(now*.044)*.0042;
       const drawX=x+vibrationX,drawY=capture.h-truckH-2+vibrationY;
