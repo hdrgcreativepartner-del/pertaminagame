@@ -5,7 +5,12 @@ const pad=n=>String(Math.max(0,Math.round(Number(n)||0))).padStart(4,'0');
 const PLAYERS_KEY='pertaminaBoothPlayersV4',SCORES_KEY='pertaminaBoothScoresV4',CURRENT_KEY='pertaminaCurrentPlayerV4',WORDS_KEY='pertaminaCustomWordsV4',SYSTEM_PAUSE_KEY='pgnSystemPausedV1',OPERATOR_USER_KEY='pgnOperatorUserV1';
 let currentPage='home',stream=null,faceMesh=null,faceLoopBusy=false,toastTimer=null;
 const imageCache={};
-if(CFG.capture)CFG.capture.truckAsset='asset/Truck Gas.png';
+const CAPTURE_TRUCK_ASSETS={
+  left:'asset/Truck Gas left.png',
+  center:'asset/Truck Gas center.png',
+  right:'asset/Truck Gas right.png'
+};
+if(CFG.capture)CFG.capture.truckAsset=CAPTURE_TRUCK_ASSETS.center;
 
 const GAME_INFO={
   word:{kicker:'01 / ENERGY WORD',title:'FIND THE WORDS',description:'Temukan kata-kata yang berkaitan dengan PGN dan energi gas di dalam susunan huruf. Hubungkan huruf menggunakan sentuhan atau mouse dan selesaikan sebanyak mungkin sebelum waktu habis.',tips:['Kiri → kanan','Atas → bawah','120 detik']},
@@ -33,7 +38,7 @@ function shuffle(arr){return [...arr].sort(()=>Math.random()-.5)}
 function uuid(){return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,9)}`}
 function toast(message){const el=$('toast');if(!el)return;el.textContent=message;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2200)}
 function toggleFullscreen(){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()}
-function preloadAssets(){const list=[CFG.splash?.asset,CFG.splash?.partnerAsset,CFG.capture?.truckAsset,CFG.memoryBack,...(CFG.capture?.fuel||[]).map(x=>x.src),...(CFG.capture?.nonFuel||[]).map(x=>x.src),...(CFG.memory||[]),...(CFG.catchGas?.good||[]).map(x=>x.src),...(CFG.catchGas?.bad||[]).map(x=>x.src)];[...new Set(list.filter(Boolean))].forEach(src=>{const im=new Image();im.src=src;imageCache[src]=im})}
+function preloadAssets(){const list=[CFG.splash?.asset,CFG.splash?.partnerAsset,CFG.capture?.truckAsset,...Object.values(CAPTURE_TRUCK_ASSETS),CFG.memoryBack,...(CFG.capture?.fuel||[]).map(x=>x.src),...(CFG.capture?.nonFuel||[]).map(x=>x.src),...(CFG.memory||[]),...(CFG.catchGas?.good||[]).map(x=>x.src),...(CFG.catchGas?.bad||[]).map(x=>x.src)];[...new Set(list.filter(Boolean))].forEach(src=>{const im=new Image();im.src=src;imageCache[src]=im})}
 
 function hideSplash(){const s=$('splash');if(!s)return;s.classList.add('splash-hide');setTimeout(()=>{s.remove();const authed=sessionStorage.getItem('pertaminaBoothAuth')==='1';if(isSystemPaused()&&!isMasterAdmin())showMaintenance();else if(authed)showApp();else showLogin()},720)}
 function showLogin(){$('maintenanceScreen')?.classList.add('hidden');$('loginScreen')?.classList.remove('hidden');$('appRoot')?.classList.add('hidden');document.body.classList.remove('maintenance-active');resetLoginCopy();setTimeout(()=>$('loginUser')?.focus(),150)}
@@ -79,7 +84,30 @@ function boundaryX(road,boundary,t){const width=road.topW+(road.bottomW-road.top
 function drawRoad(ctx,w,h){const r=roadGeometry(w,h),topL=r.cx-r.topW/2,topR=r.cx+r.topW/2,botL=r.cx-r.bottomW/2,botR=r.cx+r.bottomW/2;ctx.fillStyle='#101113';ctx.fillRect(0,0,w,h);const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'#35373a');g.addColorStop(.55,'#25272a');g.addColorStop(1,'#17191b');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(topL,0);ctx.lineTo(topR,0);ctx.lineTo(botR,h);ctx.lineTo(botL,h);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(255,255,255,.64)';ctx.lineWidth=1.5;for(let b=1;b<=2;b++){ctx.beginPath();ctx.moveTo(boundaryX(r,b,0),0);ctx.lineTo(boundaryX(r,b,1),h);ctx.stroke()}capture.roadOffset=(capture.roadOffset+.013)%1;for(let lane=0;lane<3;lane++){for(let k=0;k<8;k++){const t=((k/8)+capture.roadOffset)%1,x=laneX(r,lane,t),y=t*h,l=7+20*t;ctx.fillStyle='rgba(255,255,255,.15)';ctx.fillRect(x-1,y,2,l)}}const l=capture.targetLane;ctx.fillStyle='rgba(0,112,186,.10)';ctx.beginPath();ctx.moveTo(boundaryX(r,l,.7),h*.7);ctx.lineTo(boundaryX(r,l+1,.7),h*.7);ctx.lineTo(boundaryX(r,l+1,1),h);ctx.lineTo(boundaryX(r,l,1),h);ctx.closePath();ctx.fill();return r}
 function spawnWave(){const fuel=CFG.capture?.fuel||[],bad=CFG.capture?.nonFuel||[];if(!fuel.length&&!bad.length)return;const badChance=bad.length?(CFG.capture?.nonFuelChance??.34):0,lanes=shuffle([0,1,2]),count=Math.random()<.72?2:1;for(let i=0;i<count;i++){const isBad=Math.random()<badChance,pool=isBad?bad:fuel,item=pool[Math.floor(Math.random()*pool.length)];if(!item)continue;capture.objects.push({lane:lanes[i],y:-.08,speed:.0037+Math.random()*.0012,item,bad:isBad,rot:(Math.random()-.5)*.035})}}
 function drawGameObject(ctx,o,road){o.y+=o.speed;const t=Math.max(0,Math.min(1,o.y)),x=laneX(road,o.lane,t),y=o.y*capture.h,im=imageCache[o.item.src],laneW=laneWidthAt(road,t),maxW=laneW*.54,maxH=30+30*t;let w=maxW*.72,h=maxH;if(im?.naturalWidth){const ratio=im.naturalWidth/im.naturalHeight;w=Math.min(maxW,maxH*ratio);h=w/ratio}ctx.save();ctx.translate(x,y);ctx.rotate(o.rot);ctx.shadowColor=o.bad?'rgba(214,25,31,.42)':'rgba(187,215,96,.4)';ctx.shadowBlur=8+8*t;if(im?.complete&&im.naturalWidth)ctx.drawImage(im,-w/2,-h/2,w,h);else{ctx.fillStyle=o.bad?'#D6191F':'#BBD760';ctx.beginPath();ctx.arc(0,0,Math.min(w,h)*.35,0,Math.PI*2);ctx.fill()}ctx.restore();return{x,y,w,h}}
-function drawTruck(ctx,road){const im=imageCache[CFG.capture?.truckAsset],t=.93;capture.truckLane+=(capture.targetLane-capture.truckLane)*.075;const x=laneX(road,capture.truckLane,t),laneW=laneWidthAt(road,t),truckW=Math.min(138,laneW*.60),ratio=im?.naturalWidth?im.naturalHeight/im.naturalWidth:.55,truckH=truckW*ratio,y=capture.h-truckH-10;ctx.save();ctx.shadowColor='rgba(0,0,0,.65)';ctx.shadowBlur=20;ctx.shadowOffsetY=9;if(im?.complete&&im.naturalWidth)ctx.drawImage(im,x-truckW/2,y,truckW,truckH);else{ctx.fillStyle='#0070BA';ctx.fillRect(x-truckW/2,y,truckW,truckH)}ctx.restore();return{x,y:y+truckH*.5,w:truckW,h:truckH,lane:capture.truckLane}}
+function captureTruckAsset(){
+  if(capture.targetLane===0)return CAPTURE_TRUCK_ASSETS.left;
+  if(capture.targetLane===2)return CAPTURE_TRUCK_ASSETS.right;
+  return CAPTURE_TRUCK_ASSETS.center;
+}
+function drawTruck(ctx,road){
+  const sprite=captureTruckAsset();
+  const im=imageCache[sprite]||imageCache[CAPTURE_TRUCK_ASSETS.center]||imageCache[CFG.capture?.truckAsset];
+  const t=.93;
+  capture.truckLane+=(capture.targetLane-capture.truckLane)*.075;
+  const x=laneX(road,capture.truckLane,t),laneW=laneWidthAt(road,t);
+  const truckW=Math.min(220,laneW*.74);
+  const ratio=im?.naturalWidth?im.naturalHeight/im.naturalWidth:.72;
+  const truckH=truckW*ratio;
+  const y=capture.h-truckH-6;
+  ctx.save();
+  ctx.shadowColor='rgba(0,0,0,.70)';
+  ctx.shadowBlur=24;
+  ctx.shadowOffsetY=10;
+  if(im?.complete&&im.naturalWidth)ctx.drawImage(im,x-truckW/2,y,truckW,truckH);
+  else{ctx.fillStyle='#0070BA';ctx.fillRect(x-truckW/2,y,truckW,truckH)}
+  ctx.restore();
+  return{x,y:y+truckH*.5,w:truckW,h:truckH,lane:capture.truckLane}
+}
 function captureLoop(ts){if(!capture.running)return;const ctx=capture.ctx;if(!ctx){resizeCapture();capture.raf=requestAnimationFrame(captureLoop);return}ctx.clearRect(0,0,capture.w,capture.h);const road=drawRoad(ctx,capture.w,capture.h);if(!capture.lastSpawn||ts-capture.lastSpawn>(CFG.capture?.spawnEvery||880)){spawnWave();capture.lastSpawn=ts}const truck=drawTruck(ctx,road);for(let i=capture.objects.length-1;i>=0;i--){const o=capture.objects[i],p=drawGameObject(ctx,o,road),sameLane=Math.abs(o.lane-truck.lane)<.43,hit=sameLane&&o.y>.82&&o.y<1.03&&Math.abs(p.x-truck.x)<Math.max(24,truck.w*.42);if(hit){collectCapture(o);capture.objects.splice(i,1)}else if(o.y>1.1)capture.objects.splice(i,1)}capture.raf=requestAnimationFrame(captureLoop)}
 function collectCapture(o){const points=Number(o.item.points)||0;if(o.bad){capture.score=Math.max(0,capture.score+points);capture.combo=1;navigator.vibrate?.([30,20,30])}else{capture.score+=Math.round(points*Math.max(1,capture.combo));capture.combo=Math.min(7,capture.combo+.45)}updateCaptureHud();const f=$('hitFlash');f.className=`hit-flash ${o.bad?'bad':'good'}`;setTimeout(()=>f.className='hit-flash',220)}
 function stopCameraStream(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}if($('webcam'))$('webcam').srcObject=null}
