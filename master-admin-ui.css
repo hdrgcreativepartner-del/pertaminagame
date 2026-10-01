@@ -72,12 +72,12 @@ body.system-paused-master:before{
 /* Hero Truck Gas — clean, lightweight, no heavy spin */
 .hero-truck{
   width:min(78%,620px)!important;max-height:78%!important;object-fit:contain!important;
-  animation:truckGasFloat 6.5s cubic-bezier(.45,.05,.55,.95) infinite!important;
+  animation:truckGasFloat 7.2s ease-in-out infinite!important;
   transform-origin:50% 50%!important;filter:drop-shadow(0 26px 30px rgba(0,0,0,.24))
 }
 @keyframes truckGasFloat{
-  0%,100%{transform:translate(-50%,-50%) translate3d(0,5px,0) scale(.985)}
-  50%{transform:translate(-50%,-50%) translate3d(0,-9px,0) scale(1.02)}
+  0%,100%{transform:translate(-50%,-50%) scale(.94)}
+  50%{transform:translate(-50%,-50%) scale(1.07)}
 }
 .hero-ring{opacity:.42}
 .orbit-label,.orbit-label span{animation:none!important;transform:none!important;rotate:0deg!important}
