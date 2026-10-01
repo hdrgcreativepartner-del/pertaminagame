@@ -133,7 +133,8 @@ function drawTruck(ctx,road){
   const sprite=captureTruckAsset();
   const im=imageCache[sprite]||imageCache[CAPTURE_TRUCK_ASSETS.center]||imageCache[CFG.capture?.truckAsset];
   const x=laneX(road,capture.truckLane,t),laneW=laneWidthAt(road,t);
-  const truckW=Math.min(300,laneW*.90);
+  const centerScale=sprite===CAPTURE_TRUCK_ASSETS.center?.82:1;
+  const truckW=Math.min(300,laneW*.90)*centerScale;
   const ratio=im?.naturalWidth?im.naturalHeight/im.naturalWidth:.72;
   const truckH=truckW*ratio;
   const now=performance.now();
