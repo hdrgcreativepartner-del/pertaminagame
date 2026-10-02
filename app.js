@@ -3,6 +3,9 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(Math.max(0,Math.round(Number(n)||0))).padStart(4,'0');
 const PLAYERS_KEY='pertaminaBoothPlayersV4',SCORES_KEY='pertaminaBoothScoresV4',CURRENT_KEY='pertaminaCurrentPlayerV4',WORDS_KEY='pertaminaCustomWordsV4',SYSTEM_PAUSE_KEY='pgnSystemPausedV1',OPERATOR_USER_KEY='pgnOperatorUserV1',OPERATOR_ACCOUNTS_KEY='pgnOperatorAccountsV1';
+const REMOTE_STATE_RAW='https://raw.githubusercontent.com/hdrgcreativepartner-del/pertaminagame/main/remote-state.json';
+const REMOTE_STATE_API='https://api.github.com/repos/hdrgcreativepartner-del/pertaminagame/contents/remote-state.json';
+let remoteStateCache=null,githubAdminToken='',remoteWatchTimer=null;
 let currentPage='home',stream=null,faceMesh=null,faceLoopBusy=false,toastTimer=null;
 const imageCache={};
 const CAPTURE_TRUCK_ASSETS={
@@ -20,27 +23,127 @@ const GAME_INFO={
 };
 let pendingGameInfo=null;
 
-function isSystemPaused(){return localStorage.getItem(SYSTEM_PAUSE_KEY)==='1'}
-function currentOperatorUser(){return (sessionStorage.getItem(OPERATOR_USER_KEY)||'').toLowerCase()}
-function isMasterAdmin(){return currentOperatorUser()==='hdrg'}
-function defaultOperatorAccounts(){return (CFG.auth?.users||[]).map(x=>({user:String(x.user||'').trim(),pin:String(x.pin||''),role:String(x.user||'').trim().toLowerCase()==='hdrg'?'master':'operator'})).filter(x=>x.user&&x.pin)}
-function getOperatorAccounts(){
-  try{
-    const raw=localStorage.getItem(OPERATOR_ACCOUNTS_KEY);
-    if(raw){const parsed=JSON.parse(raw);if(Array.isArray(parsed)&&parsed.length)return parsed}
-  }catch{}
-  const accounts=defaultOperatorAccounts();
-  localStorage.setItem(OPERATOR_ACCOUNTS_KEY,JSON.stringify(accounts));
-  return accounts;
+function bytesToBase64(bytes){
+  let binary='',i=0;const chunk=0x8000;
+  for(;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,Math.min(i+chunk,bytes.length)));
+  return btoa(binary);
 }
-function saveOperatorAccounts(accounts){localStorage.setItem(OPERATOR_ACCOUNTS_KEY,JSON.stringify(accounts))}
+function base64ToBytes(value){const bin=atob(String(value||'').replace(/\s/g,''));return Uint8Array.from(bin,c=>c.charCodeAt(0))}
+function utf8ToBase64(value){return bytesToBase64(new TextEncoder().encode(String(value)))}
+function base64ToUtf8(value){return new TextDecoder().decode(base64ToBytes(value))}
+async function pinDigest(pin,saltB64,iterations=120000){
+  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(String(pin)),'PBKDF2',false,['deriveBits']);
+  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:base64ToBytes(saltB64),iterations:Number(iterations)||120000},key,256);
+  return bytesToBase64(new Uint8Array(bits));
+}
+async function makeRemoteAccount(user,pin,role='operator'){
+  const salt=new Uint8Array(16);crypto.getRandomValues(salt);
+  const saltB64=bytesToBase64(salt),iterations=120000,hash=await pinDigest(pin,saltB64,iterations);
+  return{user:String(user).trim(),role, salt:saltB64,hash,iterations};
+}
+async function verifyRemotePin(pin,account){
+  if(!account)return false;
+  if(account.hash&&account.salt)return (await pinDigest(pin,account.salt,account.iterations||120000))===account.hash;
+  return String(account.pin||'')===String(pin||'');
+}
+async function fetchRemoteState(){
+  const res=await fetch(REMOTE_STATE_RAW+'?v='+Date.now(),{cache:'no-store'});
+  if(!res.ok)throw new Error('Remote state '+res.status);
+  const state=await res.json();
+  if(!Array.isArray(state.users))state.users=[];
+  remoteStateCache=state;
+  return state;
+}
+function defaultOperatorAccounts(){return (CFG.auth?.users||[]).map(x=>({user:String(x.user||'').trim(),pin:String(x.pin||''),role:String(x.user||'').trim().toLowerCase()==='hdrg'?'master':'operator'})).filter(x=>x.user&&x.pin)}
+function getOperatorAccounts(){return remoteStateCache?.users?.length?remoteStateCache.users:defaultOperatorAccounts()}
 function getOperatorAccount(name){const key=String(name||'').trim().toLowerCase();return getOperatorAccounts().find(x=>String(x.user||'').trim().toLowerCase()===key)||null}
 function validPin(pin){return /^\d{4,8}$/.test(String(pin||''))}
+function isSystemPaused(){return remoteStateCache?.paused===true||(remoteStateCache==null&&localStorage.getItem(SYSTEM_PAUSE_KEY)==='1')}
+function currentOperatorUser(){return (sessionStorage.getItem(OPERATOR_USER_KEY)||'').toLowerCase()}
+function isMasterAdmin(){return currentOperatorUser()==='hdrg'}
+async function githubGetRemoteState(){
+  if(!githubAdminToken)throw new Error('GitHub token belum terhubung');
+  const res=await fetch(REMOTE_STATE_API+'?ref=main&v='+Date.now(),{
+    cache:'no-store',
+    headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+githubAdminToken,'X-GitHub-Api-Version':'2022-11-28'}
+  });
+  if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.message||('GitHub '+res.status))}
+  const data=await res.json();
+  return{sha:data.sha,state:JSON.parse(base64ToUtf8(data.content))};
+}
+async function githubCommitRemoteState(mutator,message){
+  if(!githubAdminToken)throw new Error('Hubungkan GitHub token terlebih dahulu');
+  const current=await githubGetRemoteState();
+  const next=JSON.parse(JSON.stringify(current.state||{}));
+  if(!Array.isArray(next.users))next.users=[];
+  await mutator(next);
+  next.updatedAt=new Date().toISOString();
+  const res=await fetch(REMOTE_STATE_API,{
+    method:'PUT',
+    headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+githubAdminToken,'X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},
+    body:JSON.stringify({message,content:utf8ToBase64(JSON.stringify(next,null,2)+'\n'),sha:current.sha,branch:'main'})
+  });
+  if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err.message||('GitHub '+res.status))}
+  remoteStateCache=next;
+  localStorage.setItem(SYSTEM_PAUSE_KEY,next.paused?'1':'0');
+  return next;
+}
+async function connectGitHubAdmin(e){
+  e?.preventDefault();
+  if(!isMasterAdmin()){toast('Master admin only');return false}
+  const input=$('githubAdminTokenInput'),status=$('githubConnectionStatus'),token=(input?.value||'').trim();
+  if(!token){toast('Masukkan GitHub token');return false}
+  githubAdminToken=token;
+  if(status){status.textContent='CONNECTING...';status.classList.remove('connected','error')}
+  try{
+    await githubGetRemoteState();
+    if(input)input.value='';
+    if(status){status.textContent='CONNECTED';status.classList.add('connected')}
+    toast('GitHub connected — token hanya tersimpan di memori tab ini');
+    renderAdminSettings();
+  }catch(err){
+    githubAdminToken='';
+    if(status){status.textContent='CONNECTION FAILED';status.classList.add('error')}
+    toast(err.message||'GitHub connection failed');
+  }
+  return false;
+}
+function clearRemoteWatch(){if(remoteWatchTimer){clearInterval(remoteWatchTimer);remoteWatchTimer=null}}
+function startRemoteWatch(){
+  clearRemoteWatch();
+  remoteWatchTimer=setInterval(async()=>{
+    try{
+      const state=await fetchRemoteState();
+      if(state.paused&&!isMasterAdmin()){stopAllGames();showMaintenance()}
+      if(isMasterAdmin())syncMasterAdminUI();
+    }catch{}
+  },30000);
+}
 function showMaintenance(){syncHomeBackgroundVideo(false);$('maintenanceScreen')?.classList.remove('hidden');$('loginScreen')?.classList.add('hidden');$('appRoot')?.classList.add('hidden');document.body.classList.add('maintenance-active')}
 function resetLoginCopy(){const form=$('loginForm');if(!form)return;form.dataset.mode='normal';const k=form.querySelector('.kicker'),h=form.querySelector('h1'),p=form.querySelector('p:not(.form-error)');if(k)k.textContent='OPERATOR ACCESS';if(h)h.innerHTML='EVENT<br><em>BOOTH.</em>';if(p)p.textContent='Masuk untuk menjalankan permainan, mengelola word bank, dan mengunduh data peserta.'}
-function syncMasterAdminUI(){const btn=$('systemPauseBtn'),settingsBtn=$('adminSettingsBtn'),master=isMasterAdmin();if(btn){btn.classList.toggle('hidden',!master);btn.classList.toggle('paused',isSystemPaused());const b=btn.querySelector('b'),sp=btn.querySelector('span');if(b)b.textContent=isSystemPaused()?'▶':'⏸';if(sp)sp.textContent=isSystemPaused()?'RESUME SYSTEM':'PAUSE SYSTEM'}settingsBtn?.classList.toggle('hidden',!master);document.body.classList.toggle('master-admin',master);document.body.classList.toggle('system-paused-master',master&&isSystemPaused());if(currentPage==='settings'&&master)renderAdminSettings()}
+function syncMasterAdminUI(){
+  const btn=$('systemPauseBtn'),settingsBtn=$('adminSettingsBtn'),master=isMasterAdmin(),paused=isSystemPaused();
+  if(btn){
+    btn.classList.toggle('hidden',!master);btn.classList.toggle('paused',paused);
+    const b=btn.querySelector('b'),sp=btn.querySelector('span');
+    if(b)b.textContent=paused?'▶':'⏸';if(sp)sp.textContent=paused?'RESUME SYSTEM':'PAUSE SYSTEM';
+  }
+  settingsBtn?.classList.toggle('hidden',!master);
+  document.body.classList.toggle('master-admin',master);
+  document.body.classList.toggle('system-paused-master',master&&paused);
+  if(currentPage==='settings'&&master)renderAdminSettings();
+}
 function openMasterAdminLogin(){$('maintenanceScreen')?.classList.add('hidden');$('loginScreen')?.classList.remove('hidden');$('appRoot')?.classList.add('hidden');document.body.classList.remove('maintenance-active');const form=$('loginForm');if(form)form.dataset.mode='maintenance';const k=form?.querySelector('.kicker'),h=form?.querySelector('h1'),p=form?.querySelector('p:not(.form-error)');if(k)k.textContent='MASTER ADMIN ACCESS';if(h)h.innerHTML='SYSTEM<br><em>CONTROL.</em>';if(p)p.textContent='Maintenance aktif. Hanya master admin HDRG yang dapat masuk untuk mengaktifkan kembali sistem.';$('loginError').textContent='';setTimeout(()=>$('loginUser')?.focus(),120)}
-function toggleSystemPause(){if(!isMasterAdmin()){toast('Master admin only');return}if(isSystemPaused()){if(!confirm('Aktifkan kembali sistem untuk operator dan player?'))return;localStorage.removeItem(SYSTEM_PAUSE_KEY);syncMasterAdminUI();toast('System resumed')}else{if(!confirm('Pause system? Setelah logout atau refresh, user akan melihat System Maintenance.'))return;localStorage.setItem(SYSTEM_PAUSE_KEY,'1');stopAllGames();syncMasterAdminUI();toast('System paused — master admin tetap dapat mengakses sistem')}renderAdminSettings()}
+async function toggleSystemPause(){
+  if(!isMasterAdmin()){toast('Master admin only');return}
+  if(!githubAdminToken){toast('Hubungkan GitHub token di Settings terlebih dahulu');showPage('settings');return}
+  const target=!isSystemPaused();
+  if(!confirm(target?'Pause system secara global? Semua device akan melihat System Maintenance.':'Resume system secara global?'))return;
+  try{
+    await githubCommitRemoteState(state=>{state.paused=target},target?'Pause booth system globally':'Resume booth system globally');
+    syncMasterAdminUI();renderAdminSettings();toast(target?'System paused globally':'System resumed globally');
+  }catch(err){toast(err.message||'Gagal mengubah system state')}
+}
 function closeGameInfo(){const m=$('gameInfoModal');m?.classList.remove('show');setTimeout(()=>m?.classList.add('hidden'),220);pendingGameInfo=null}
 function confirmGameInfo(){const id=pendingGameInfo;if(!id)return;const m=$('gameInfoModal');m?.classList.remove('show');setTimeout(()=>m?.classList.add('hidden'),220);pendingGameInfo=null;setTimeout(()=>enterGame(id),100)}
 function showGameInfo(id){const info=GAME_INFO[id];if(!info){enterGame(id);return}pendingGameInfo=id;$('gameInfoKicker').textContent=info.kicker;$('gameInfoTitle').textContent=info.title;$('gameInfoDescription').textContent=info.description;$('gameInfoTips').innerHTML=info.tips.map(x=>'<span>'+esc(x)+'</span>').join('');const m=$('gameInfoModal');m?.classList.remove('hidden');requestAnimationFrame(()=>m?.classList.add('show'))}
@@ -79,11 +182,28 @@ function syncHomeBackgroundVideo(play){
   }else v.pause();
 }
 
-function hideSplash(){const s=$('splash');if(!s)return;s.classList.add('splash-hide');setTimeout(()=>{s.remove();const authed=sessionStorage.getItem('pertaminaBoothAuth')==='1';if(isSystemPaused()&&!isMasterAdmin())showMaintenance();else if(authed)showApp();else showLogin()},720)}
+function hideSplash(){const s=$('splash');if(!s)return;s.classList.add('splash-hide');setTimeout(async()=>{s.remove();try{await fetchRemoteState()}catch{}const authed=sessionStorage.getItem('pertaminaBoothAuth')==='1';if(isSystemPaused()&&!isMasterAdmin())showMaintenance();else if(authed)showApp();else showLogin()},720)}
 function showLogin(){syncHomeBackgroundVideo(false);$('maintenanceScreen')?.classList.add('hidden');$('loginScreen')?.classList.remove('hidden');$('appRoot')?.classList.add('hidden');document.body.classList.remove('maintenance-active');resetLoginCopy();setTimeout(()=>$('loginUser')?.focus(),150)}
-function showApp(){$('maintenanceScreen')?.classList.add('hidden');$('loginScreen')?.classList.add('hidden');$('appRoot')?.classList.remove('hidden');document.body.classList.remove('maintenance-active');restorePlayerForm();renderWordBank();prepareWordSearch();resetMemory();resetCatchGas();renderLeaderboard();showPage('home');syncMasterAdminUI();setTimeout(()=>syncHomeBackgroundVideo(true),80);setTimeout(preloadAssets,700)}
-function loginOperator(e){e?.preventDefault();const user=$('loginUser').value.trim().toLowerCase(),pin=$('loginPin').value.trim(),account=getOperatorAccount(user),valid=!!account&&String(account.pin)===pin;if(valid&&isSystemPaused()&&user!=='hdrg'){$('loginError').textContent='System Maintenance aktif. Hanya master admin yang dapat masuk.';$('loginPin').value='';$('loginPin').focus();return false}if(valid){sessionStorage.setItem('pertaminaBoothAuth','1');sessionStorage.setItem(OPERATOR_USER_KEY,user);$('loginError').textContent='';showApp();toast(user==='hdrg'?'Master admin access granted':'Booth access granted');return false}else{$('loginError').textContent='User atau PIN tidak sesuai.';$('loginPin').value='';$('loginPin').focus();return false}}
-function logoutOperator(){if(!confirm('Keluar dari booth operator?'))return;stopAllGames();sessionStorage.removeItem('pertaminaBoothAuth');sessionStorage.removeItem(OPERATOR_USER_KEY);document.body.classList.remove('master-admin','system-paused-master');if(isSystemPaused())showMaintenance();else showLogin()}
+function showApp(){$('maintenanceScreen')?.classList.add('hidden');$('loginScreen')?.classList.add('hidden');$('appRoot')?.classList.remove('hidden');document.body.classList.remove('maintenance-active');restorePlayerForm();renderWordBank();prepareWordSearch();resetMemory();resetCatchGas();renderLeaderboard();showPage('home');syncMasterAdminUI();startRemoteWatch();setTimeout(()=>syncHomeBackgroundVideo(true),80);setTimeout(preloadAssets,700)}
+async function loginOperator(e){
+  e?.preventDefault();
+  const user=$('loginUser').value.trim().toLowerCase(),pin=$('loginPin').value.trim();
+  let state=null;
+  try{state=await fetchRemoteState()}catch{}
+  const account=(state?.users||getOperatorAccounts()).find(x=>String(x?.user||'').trim().toLowerCase()===user);
+  const valid=await verifyRemotePin(pin,account);
+  const role=user==='hdrg'?'master':(account?.role||'operator');
+  if(valid&&state?.paused&&role!=='master'){
+    $('loginError').textContent='System Maintenance aktif. Hanya master admin HDRG yang dapat masuk.';
+    $('loginPin').value='';$('loginPin').focus();return false;
+  }
+  if(valid){
+    sessionStorage.setItem('pertaminaBoothAuth','1');sessionStorage.setItem(OPERATOR_USER_KEY,user);
+    $('loginError').textContent='';showApp();toast(user==='hdrg'?'Master admin access granted':'Booth access granted');return false;
+  }
+  $('loginError').textContent='User atau PIN tidak sesuai.';$('loginPin').value='';$('loginPin').focus();return false;
+}
+function logoutOperator(){if(!confirm('Keluar dari booth operator?'))return;stopAllGames();clearRemoteWatch();githubAdminToken='';sessionStorage.removeItem('pertaminaBoothAuth');sessionStorage.removeItem(OPERATOR_USER_KEY);document.body.classList.remove('master-admin','system-paused-master');if(isSystemPaused())showMaintenance();else showLogin()}
 
 function setNavActive(id){document.querySelectorAll('.nav-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.page===id))}
 function showPage(id){if(id==='settings'&&!isMasterAdmin()){toast('Master admin only');id='home'}if(id!==currentPage){if(currentPage==='capture')stopCamera();if(currentPage==='word')stopWordSearch(false);if(currentPage==='memory')stopMemory(false);if(currentPage==='catchgas')stopCatchGas()}currentPage=id;document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));setNavActive(id);syncHomeBackgroundVideo(id==='home');if(id==='leaderboard')renderLeaderboard();if(id==='settings')renderAdminSettings();window.scrollTo({top:0,behavior:'smooth'})}
@@ -92,39 +212,60 @@ function openGame(id){if(!ensurePlayer())return;showGameInfo(id)}
 function stopAllGames(){stopCamera();stopWordSearch(false);stopMemory(false);stopCatchGas()}
 
 function openAdminSettings(){if(!isMasterAdmin()){toast('Master admin only');return}showPage('settings')}
-function renderAdminSettings(){
+async function renderAdminSettings(){
   if(!isMasterAdmin())return;
-  const paused=isSystemPaused(),status=$('settingsSystemStatus'),btn=$('settingsPauseBtn');
+  let state=remoteStateCache;
+  if(!state){try{state=await fetchRemoteState()}catch{}}
+  const paused=state?.paused===true,status=$('settingsSystemStatus'),btn=$('settingsPauseBtn');
   if(status){status.textContent=paused?'PAUSED':'ACTIVE';status.classList.toggle('paused',paused)}
-  if(btn){btn.textContent=paused?'RESUME SYSTEM':'PAUSE SYSTEM';btn.classList.toggle('resume',paused)}
+  if(btn){btn.textContent=paused?'RESUME SYSTEM':'PAUSE SYSTEM';btn.classList.toggle('resume',paused);btn.disabled=!githubAdminToken}
+  const connection=$('githubConnectionStatus');
+  if(connection&&githubAdminToken){connection.textContent='CONNECTED';connection.classList.add('connected')}
   const list=$('operatorUserList');if(!list)return;
-  const accounts=getOperatorAccounts();
+  const accounts=state?.users||[];
   list.innerHTML=accounts.map(a=>{const master=String(a.user).toLowerCase()==='hdrg';return '<div class="operator-user-row"><div><b>'+esc(a.user)+'</b><span>'+(master?'MASTER ADMIN':'OPERATOR')+'</span></div>'+(master?'<em>PROTECTED</em>':'<button type="button" onclick="removeOperatorUser(\''+esc(a.user)+'\')">REMOVE</button>')+'</div>'}).join('');
 }
-function changeMasterPin(e){
+async function changeMasterPin(e){
   e?.preventDefault();if(!isMasterAdmin()){toast('Master admin only');return false}
-  const current=$('currentMasterPin')?.value||'',next=$('newMasterPin')?.value||'',confirmPin=$('confirmMasterPin')?.value||'',accounts=getOperatorAccounts(),idx=accounts.findIndex(x=>String(x.user).toLowerCase()==='hdrg');
-  if(idx<0){toast('HDRG account tidak ditemukan');return false}
-  if(String(accounts[idx].pin)!==current){toast('Current PIN salah');return false}
+  if(!githubAdminToken){toast('Hubungkan GitHub token terlebih dahulu');return false}
+  const current=$('currentMasterPin')?.value||'',next=$('newMasterPin')?.value||'',confirmPin=$('confirmMasterPin')?.value||'';
   if(!validPin(next)){toast('PIN baru harus 4–8 digit');return false}
   if(next!==confirmPin){toast('Konfirmasi PIN tidak sama');return false}
-  accounts[idx].pin=next;saveOperatorAccounts(accounts);
-  $('currentMasterPin').value='';$('newMasterPin').value='';$('confirmMasterPin').value='';toast('HDRG PIN berhasil diubah');renderAdminSettings();return false;
+  try{
+    const state=remoteStateCache||await fetchRemoteState(),master=(state.users||[]).find(x=>String(x.user).toLowerCase()==='hdrg');
+    if(!await verifyRemotePin(current,master)){toast('Current PIN salah');return false}
+    const newAccount=await makeRemoteAccount('hdrg',next,'master');
+    await githubCommitRemoteState(nextState=>{const i=nextState.users.findIndex(x=>String(x.user).toLowerCase()==='hdrg');if(i>=0)nextState.users[i]=newAccount;else nextState.users.unshift(newAccount)},'Update HDRG master PIN');
+    $('currentMasterPin').value='';$('newMasterPin').value='';$('confirmMasterPin').value='';toast('HDRG PIN berhasil diubah secara global');renderAdminSettings();
+  }catch(err){toast(err.message||'Gagal mengubah PIN')}
+  return false;
 }
-function addOperatorUser(e){
+async function addOperatorUser(e){
   e?.preventDefault();if(!isMasterAdmin()){toast('Master admin only');return false}
+  if(!githubAdminToken){toast('Hubungkan GitHub token terlebih dahulu');return false}
   const name=($('newOperatorName')?.value||'').trim(),pin=$('newOperatorPin')?.value||'',key=name.toLowerCase();
   if(name.length<2){toast('Username minimal 2 karakter');return false}
+  if(key==='hdrg'){toast('Username hdrg khusus master admin');return false}
   if(!validPin(pin)){toast('PIN harus 4–8 digit');return false}
-  const accounts=getOperatorAccounts();
-  if(accounts.some(x=>String(x.user).trim().toLowerCase()===key)){toast('Username sudah terdaftar');return false}
-  accounts.push({user:name,pin,role:'operator'});saveOperatorAccounts(accounts);
-  $('newOperatorName').value='';$('newOperatorPin').value='';toast('User baru ditambahkan');renderAdminSettings();return false;
+  try{
+    const account=await makeRemoteAccount(name,pin,'operator');
+    await githubCommitRemoteState(state=>{
+      if((state.users||[]).some(x=>String(x.user).trim().toLowerCase()===key))throw new Error('Username sudah terdaftar');
+      state.users.push(account);
+    },'Add booth operator '+name);
+    $('newOperatorName').value='';$('newOperatorPin').value='';toast('User baru aktif secara global');renderAdminSettings();
+  }catch(err){toast(err.message||'Gagal menambah user')}
+  return false;
 }
-function removeOperatorUser(name){
-  if(!isMasterAdmin())return;const key=String(name||'').toLowerCase();if(key==='hdrg'){toast('Master admin tidak dapat dihapus');return}
-  if(!confirm('Hapus user '+name+'?'))return;
-  saveOperatorAccounts(getOperatorAccounts().filter(x=>String(x.user).toLowerCase()!==key));toast('User dihapus');renderAdminSettings();
+async function removeOperatorUser(name){
+  if(!isMasterAdmin())return;
+  if(!githubAdminToken){toast('Hubungkan GitHub token terlebih dahulu');return}
+  const key=String(name||'').toLowerCase();if(key==='hdrg'){toast('Master admin tidak dapat dihapus');return}
+  if(!confirm('Hapus user '+name+' secara global?'))return;
+  try{
+    await githubCommitRemoteState(state=>{state.users=(state.users||[]).filter(x=>String(x.user).toLowerCase()!==key)},'Remove booth operator '+name);
+    toast('User dihapus secara global');renderAdminSettings();
+  }catch(err){toast(err.message||'Gagal menghapus user')}
 }
 
 function contactMeta(type){return type==='email'?{label:'Email',placeholder:'nama@email.com',inputType:'email'}:type==='phone'?{label:'WhatsApp / Phone',placeholder:'08xx xxxx xxxx',inputType:'tel'}:{label:'Social Media',placeholder:'@username',inputType:'text'}}
@@ -404,7 +545,6 @@ async function exportPlayerData(){
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
-  getOperatorAccounts();
   if(sessionStorage.getItem('pertaminaBoothAuth')==='1'&&!sessionStorage.getItem(OPERATOR_USER_KEY))sessionStorage.setItem(OPERATOR_USER_KEY,'89 pro');
   syncMasterAdminUI();
   $('gameInfoModal')?.addEventListener('click',e=>{if(e.target?.id==='gameInfoModal')closeGameInfo()});
