@@ -792,3 +792,75 @@ button,input,select{touch-action:manipulation}
   #memory .memory-board{gap:7px 9px!important}
   #memory .memory-card-btn{aspect-ratio:1.76/1!important}
 }
+
+
+/* MEMORY SAFE MARGINS + TRUE CENTERING */
+#memory .memory-shell{
+  padding:26px!important;
+  overflow:visible!important;
+}
+#memory .memory-board{
+  box-sizing:border-box!important;
+  padding:12px 14px 16px!important;
+  border-radius:10px!important;
+  background:#f8fafb!important;
+  overflow:visible!important;
+}
+#memory .memory-card-btn{
+  margin:0!important;
+  overflow:visible!important;
+}
+#memory .memory-card-inner{
+  inset:0!important;
+  overflow:visible!important;
+}
+#memory .memory-face{
+  inset:0!important;
+  overflow:hidden!important;
+  background:#fff!important;
+}
+#memory .memory-cover-art,
+#memory .memory-blank-bg{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  transform:translate(-50%,-50%)!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+}
+#memory .memory-product{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+}
+#memory .memory-object{
+  position:absolute!important;
+  z-index:3!important;
+  left:50%!important;
+  top:50%!important;
+  transform:translate(-50%,-50%)!important;
+  width:auto!important;
+  height:auto!important;
+  max-width:54%!important;
+  max-height:54%!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  margin:0!important;
+}
+@media(orientation:portrait){
+  #memory .memory-shell{padding:18px!important}
+  #memory .memory-board{padding:10px 10px 14px!important}
+  #memory .memory-object{max-width:52%!important;max-height:52%!important}
+}
+@media(max-width:700px){
+  #memory .memory-shell{padding:14px!important}
+  #memory .memory-board{padding:8px 7px 11px!important}
+  #memory .memory-object{max-width:50%!important;max-height:50%!important}
+}
+@media(max-width:430px){
+  #memory .memory-shell{padding:10px!important}
+  #memory .memory-board{padding:6px 5px 9px!important}
+  #memory .memory-object{max-width:48%!important;max-height:48%!important}
+}
