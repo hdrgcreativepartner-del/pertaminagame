@@ -76,7 +76,7 @@
       if(typeof memory==='undefined'||!memory.running)return original(completed);
       const duration=60;
       const elapsed=Math.max(0,duration-memory.time);
-      const base=(CFG.memory||[]).length;
+      const base=(memory.roundBase?.length||CFG.memoryPairCount||6);
       const score=Math.max(0,memory.matches*100+memory.time*4-Math.max(0,memory.moves-base)*5);
       original(completed);
       showResultPopup({
