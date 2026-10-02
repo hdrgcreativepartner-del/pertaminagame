@@ -1,0 +1,20 @@
+{
+  "paused": false,
+  "updatedAt": "2026-10-03T00:55:00+07:00",
+  "users": [
+    {
+      "user": "hdrg",
+      "role": "master",
+      "salt": "tuFv5b2g7S88s6Fg7xIuhQ==",
+      "hash": "pW6vpiiZIz0fhlBdMdaJoefXSHMSFaN37E5lHVT7604=",
+      "iterations": 120000
+    },
+    {
+      "user": "89 pro",
+      "role": "operator",
+      "salt": "eMAzH+CtCdxu8qhFjkNlKg==",
+      "hash": "J1oIs3/1IRxX9v+QvH9RXqlFh/eZHeVfPDotHCLTKZI=",
+      "iterations": 120000
+    }
+  ]
+}
