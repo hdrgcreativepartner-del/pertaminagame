@@ -8,7 +8,7 @@ window.EVENT_CONFIG={
     pin:'1945',
     users:[
       {user:'89 pro',pin:'1945'},
-      {user:'hdrg',pin:'1945'}
+      {user:'hdrg',pin:'1993'}
     ]
   },
   capture:{
@@ -69,5 +69,11 @@ window.EVENT_CONFIG={
     'asset/Logo Produk PGN • GasLink.png',
     'asset/Bright Gas.png'
   ],
-  memoryBack:'asset/Pertamina Gas Negara logo.png'
+  memoryRequired:[
+    'asset/Subaya icon.png',
+    'asset/Tugu Pahlawan icon.png'
+  ],
+  memoryPairCount:6,
+  memoryBack:'asset/Card Cover.png',
+  memoryBlank:'asset/Card Blank.png'
 };
