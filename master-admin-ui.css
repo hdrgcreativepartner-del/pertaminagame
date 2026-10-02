@@ -430,3 +430,73 @@ button,input,select{touch-action:manipulation}
   .memory-board{gap:5px!important}
   .memory-object{width:58%!important;height:48%!important}
 }
+
+
+/* MEMORY BOARD FIT — keep canvas/card/object proportions */
+.memory-shell{
+  width:min(1180px,100%)!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+.memory-board{
+  width:100%!important;
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(105px,160px))!important;
+  justify-content:center!important;
+  align-items:start!important;
+  gap:clamp(8px,1vw,14px)!important;
+  margin:0 auto!important;
+}
+.memory-card-btn{
+  width:100%!important;
+  max-width:160px!important;
+  aspect-ratio:.72!important;
+  justify-self:center!important;
+}
+.memory-card-inner,
+.memory-face{
+  width:100%!important;
+  height:100%!important;
+}
+.memory-cover-art,
+.memory-blank-bg{
+  max-width:100%!important;
+  max-height:100%!important;
+  object-fit:contain!important;
+}
+.memory-object{
+  width:auto!important;
+  height:auto!important;
+  max-width:56%!important;
+  max-height:44%!important;
+  object-fit:contain!important;
+  margin:auto!important;
+  inset:auto!important;
+}
+@media(max-width:1100px){
+  .memory-board{
+    grid-template-columns:repeat(4,minmax(105px,150px))!important;
+  }
+  .memory-card-btn{max-width:150px!important}
+}
+@media(orientation:portrait){
+  .memory-shell{width:min(760px,100%)!important}
+  .memory-board{
+    grid-template-columns:repeat(3,minmax(92px,150px))!important;
+  }
+  .memory-card-btn{max-width:150px!important}
+  .memory-object{max-width:54%!important;max-height:42%!important}
+}
+@media(max-width:620px){
+  .memory-board{
+    grid-template-columns:repeat(3,minmax(82px,1fr))!important;
+    gap:7px!important;
+  }
+  .memory-card-btn{max-width:132px!important}
+  .memory-object{max-width:52%!important;max-height:40%!important}
+}
+@media(max-width:390px){
+  .memory-board{grid-template-columns:repeat(3,minmax(74px,1fr))!important;gap:5px!important}
+  .memory-card-btn{max-width:116px!important}
+  .memory-object{max-width:50%!important;max-height:38%!important}
+}
