@@ -555,3 +555,240 @@ button,input,select{touch-action:manipulation}
   cursor:not-allowed;
   filter:grayscale(.35);
 }
+
+
+/* MEMORY REFERENCE LAYOUT — 4x3 landscape / 3x4 portrait */
+#memory.memory-page{
+  background:linear-gradient(180deg,#f4f6f8 0%,#edf0f3 100%)!important;
+  min-height:calc(100vh - 98px);
+}
+#memory .game-titlebar{
+  width:min(1040px,calc(100% - 32px));
+  margin:0 auto 14px!important;
+  align-items:end!important;
+}
+#memory .game-titlebar>div:nth-child(2){flex:1}
+#memory .game-titlebar h2{
+  margin-top:5px!important;
+  font-size:clamp(54px,5.7vw,86px)!important;
+  line-height:.86!important;
+  letter-spacing:-.035em!important;
+}
+#memory .memory-shell{
+  width:min(980px,calc(100% - 32px))!important;
+  max-width:none!important;
+  margin:0 auto!important;
+  padding:18px!important;
+  border:1px solid #dce2e7!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  box-shadow:0 18px 48px rgba(13,32,49,.08)!important;
+}
+#memory .memory-brand{
+  display:flex!important;
+  align-items:center!important;
+  gap:16px!important;
+  min-height:62px!important;
+  margin:0 0 10px!important;
+}
+#memory .memory-brand img{
+  width:170px!important;
+  height:58px!important;
+  object-fit:contain!important;
+  flex:0 0 auto!important;
+}
+#memory .memory-brand b{
+  font-size:26px!important;
+  line-height:.95!important;
+  color:#0c2348!important;
+}
+#memory .memory-brand span{
+  display:block!important;
+  margin-top:5px!important;
+  font-size:7px!important;
+  line-height:1.35!important;
+  color:#7c8792!important;
+}
+#memory .memory-stats{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:7px!important;
+  margin:0 0 14px!important;
+}
+#memory .memory-stats>div{
+  min-height:47px!important;
+  padding:8px 10px!important;
+  border-radius:7px!important;
+  background:#f3f5f7!important;
+}
+#memory .memory-stats span{
+  font-size:6px!important;
+  letter-spacing:.12em!important;
+}
+#memory .memory-stats b{
+  font-size:22px!important;
+  line-height:1!important;
+}
+#memory .memory-board{
+  width:100%!important;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:10px 12px!important;
+  justify-content:stretch!important;
+  align-items:stretch!important;
+  margin:0!important;
+}
+#memory .memory-card-btn{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  aspect-ratio:1.72/1!important;
+  justify-self:stretch!important;
+  border-radius:10px!important;
+}
+#memory .memory-card-inner,
+#memory .memory-face{
+  width:100%!important;
+  height:100%!important;
+  border-radius:10px!important;
+}
+#memory .memory-face{
+  box-shadow:0 4px 0 rgba(12,35,72,.18),0 9px 18px rgba(12,35,72,.08)!important;
+}
+#memory .memory-cover-art,
+#memory .memory-blank-bg{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:cover!important;
+  object-position:center!important;
+}
+#memory .memory-product{
+  display:grid!important;
+  place-items:center!important;
+}
+#memory .memory-object{
+  position:relative!important;
+  z-index:2!important;
+  width:auto!important;
+  height:auto!important;
+  max-width:58%!important;
+  max-height:58%!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  margin:auto!important;
+  inset:auto!important;
+  filter:drop-shadow(0 5px 8px rgba(0,0,0,.12))!important;
+}
+#memory .memory-result{
+  margin-top:12px!important;
+}
+
+@media(orientation:portrait){
+  #memory .game-titlebar{
+    width:min(760px,calc(100% - 24px));
+    margin-bottom:12px!important;
+  }
+  #memory .game-titlebar h2{
+    font-size:clamp(48px,10vw,76px)!important;
+  }
+  #memory .memory-shell{
+    width:min(760px,calc(100% - 24px))!important;
+    padding:14px!important;
+  }
+  #memory .memory-board{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:9px!important;
+  }
+  #memory .memory-card-btn{
+    aspect-ratio:1.62/1!important;
+  }
+  #memory .memory-object{
+    max-width:56%!important;
+    max-height:56%!important;
+  }
+}
+@media(max-width:700px){
+  #memory .game-titlebar{
+    align-items:center!important;
+    gap:10px!important;
+  }
+  #memory .game-titlebar h2{
+    font-size:clamp(42px,11vw,62px)!important;
+  }
+  #memory .memory-shell{
+    padding:11px!important;
+  }
+  #memory .memory-brand{
+    min-height:0!important;
+    gap:10px!important;
+  }
+  #memory .memory-brand img{
+    width:118px!important;
+    height:42px!important;
+  }
+  #memory .memory-brand b{
+    font-size:20px!important;
+  }
+  #memory .memory-brand span{
+    font-size:6px!important;
+  }
+  #memory .memory-stats>div{
+    min-height:42px!important;
+    padding:7px 8px!important;
+  }
+  #memory .memory-stats b{
+    font-size:19px!important;
+  }
+  #memory .memory-board{
+    gap:7px!important;
+  }
+  #memory .memory-card-btn{
+    aspect-ratio:1.55/1!important;
+  }
+  #memory .memory-object{
+    max-width:54%!important;
+    max-height:54%!important;
+  }
+}
+@media(max-width:430px){
+  #memory .memory-board{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:5px!important;
+  }
+  #memory .memory-card-btn{
+    aspect-ratio:1.48/1!important;
+  }
+  #memory .memory-object{
+    max-width:52%!important;
+    max-height:52%!important;
+  }
+}
+@media(orientation:landscape) and (max-height:720px){
+  #memory .game-titlebar{
+    margin-bottom:8px!important;
+  }
+  #memory .game-titlebar h2{
+    font-size:clamp(48px,6vw,68px)!important;
+  }
+  #memory .memory-shell{
+    padding:12px 14px!important;
+  }
+  #memory .memory-brand{
+    min-height:50px!important;
+    margin-bottom:7px!important;
+  }
+  #memory .memory-brand img{
+    width:145px!important;
+    height:48px!important;
+  }
+  #memory .memory-brand b{font-size:22px!important}
+  #memory .memory-stats{margin-bottom:9px!important}
+  #memory .memory-stats>div{min-height:39px!important;padding:6px 8px!important}
+  #memory .memory-stats b{font-size:18px!important}
+  #memory .memory-board{gap:7px 9px!important}
+  #memory .memory-card-btn{aspect-ratio:1.76/1!important}
+}
