@@ -2,7 +2,7 @@ const CFG=window.EVENT_CONFIG||{};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(Math.max(0,Math.round(Number(n)||0))).padStart(4,'0');
-const PLAYERS_KEY='pertaminaBoothPlayersV4',SCORES_KEY='pertaminaBoothScoresV4',CURRENT_KEY='pertaminaCurrentPlayerV4',WORDS_KEY='pertaminaCustomWordsV4',SYSTEM_PAUSE_KEY='pgnSystemPausedV1',OPERATOR_USER_KEY='pgnOperatorUserV1';
+const PLAYERS_KEY='pertaminaBoothPlayersV4',SCORES_KEY='pertaminaBoothScoresV4',CURRENT_KEY='pertaminaCurrentPlayerV4',WORDS_KEY='pertaminaCustomWordsV4',SYSTEM_PAUSE_KEY='pgnSystemPausedV1',OPERATOR_USER_KEY='pgnOperatorUserV1',OPERATOR_ACCOUNTS_KEY='pgnOperatorAccountsV1';
 let currentPage='home',stream=null,faceMesh=null,faceLoopBusy=false,toastTimer=null;
 const imageCache={};
 const CAPTURE_TRUCK_ASSETS={
@@ -15,7 +15,7 @@ if(CFG.capture)CFG.capture.truckAsset=CAPTURE_TRUCK_ASSETS.center;
 const GAME_INFO={
   word:{kicker:'01 / ENERGY WORD',title:'FIND THE WORDS',description:'Temukan kata-kata yang berkaitan dengan PGN dan energi gas di dalam susunan huruf. Hubungkan huruf menggunakan sentuhan atau mouse dan selesaikan sebanyak mungkin sebelum waktu habis.',tips:['Kiri → kanan','Atas → bawah','120 detik']},
   capture:{kicker:'02 / CAPTURE ENERGY',title:'CAPTURE THE GAS',description:'Gerakkan kepala ke kiri, tengah, atau kanan untuk mengendalikan Truck Gas PGN. Tangkap GasKita, GasKu, GasLine, GasLink, dan Bright Gas untuk mendapat poin. Hindari produk BBM karena akan mengurangi skor.',tips:['Head tracking','Gas = + score','Fuel = − score']},
-  memory:{kicker:'03 / ENERGY MEMORY',title:'MATCH THE GAS PRODUCTS',description:'Ingat posisi setiap kartu dan temukan pasangan logo produk gas PGN yang sama. Buka dua kartu sekaligus dan cocokkan seluruh pasangan dengan langkah seefisien mungkin.',tips:['5 pairs','60 detik','Ingat posisi kartu']},
+  memory:{kicker:'03 / ENERGY MEMORY',title:'MATCH THE OBJECTS',description:'Ingat posisi kartu dan temukan pasangan logo produk gas serta ikon kota Surabaya. Card Cover akan terbuka menjadi objek di atas Card Blank. Cocokkan 6 pasangan sebelum waktu habis.',tips:['12 kartu','6 pairs','60 detik']},
   catchgas:{kicker:'04 / CATCH THE GAS',title:'TOUCH. REACT. SCORE.',description:'Uji kecepatan reaksimu. Sentuh atau klik produk gas PGN yang muncul untuk mendapatkan poin. Hindari produk BBM Pertamina karena setiap salah sentuh akan mengurangi skor.',tips:['Touchscreen + mouse','Gas = + score','Fuel = − score']}
 };
 let pendingGameInfo=null;
@@ -23,11 +23,24 @@ let pendingGameInfo=null;
 function isSystemPaused(){return localStorage.getItem(SYSTEM_PAUSE_KEY)==='1'}
 function currentOperatorUser(){return (sessionStorage.getItem(OPERATOR_USER_KEY)||'').toLowerCase()}
 function isMasterAdmin(){return currentOperatorUser()==='hdrg'}
+function defaultOperatorAccounts(){return (CFG.auth?.users||[]).map(x=>({user:String(x.user||'').trim(),pin:String(x.pin||''),role:String(x.user||'').trim().toLowerCase()==='hdrg'?'master':'operator'})).filter(x=>x.user&&x.pin)}
+function getOperatorAccounts(){
+  try{
+    const raw=localStorage.getItem(OPERATOR_ACCOUNTS_KEY);
+    if(raw){const parsed=JSON.parse(raw);if(Array.isArray(parsed)&&parsed.length)return parsed}
+  }catch{}
+  const accounts=defaultOperatorAccounts();
+  localStorage.setItem(OPERATOR_ACCOUNTS_KEY,JSON.stringify(accounts));
+  return accounts;
+}
+function saveOperatorAccounts(accounts){localStorage.setItem(OPERATOR_ACCOUNTS_KEY,JSON.stringify(accounts))}
+function getOperatorAccount(name){const key=String(name||'').trim().toLowerCase();return getOperatorAccounts().find(x=>String(x.user||'').trim().toLowerCase()===key)||null}
+function validPin(pin){return /^\d{4,8}$/.test(String(pin||''))}
 function showMaintenance(){syncHomeBackgroundVideo(false);$('maintenanceScreen')?.classList.remove('hidden');$('loginScreen')?.classList.add('hidden');$('appRoot')?.classList.add('hidden');document.body.classList.add('maintenance-active')}
 function resetLoginCopy(){const form=$('loginForm');if(!form)return;form.dataset.mode='normal';const k=form.querySelector('.kicker'),h=form.querySelector('h1'),p=form.querySelector('p:not(.form-error)');if(k)k.textContent='OPERATOR ACCESS';if(h)h.innerHTML='EVENT<br><em>BOOTH.</em>';if(p)p.textContent='Masuk untuk menjalankan permainan, mengelola word bank, dan mengunduh data peserta.'}
-function syncMasterAdminUI(){const btn=$('systemPauseBtn'),master=isMasterAdmin();if(btn){btn.classList.toggle('hidden',!master);btn.classList.toggle('paused',isSystemPaused());const b=btn.querySelector('b'),sp=btn.querySelector('span');if(b)b.textContent=isSystemPaused()?'▶':'⏸';if(sp)sp.textContent=isSystemPaused()?'RESUME SYSTEM':'PAUSE SYSTEM'}document.body.classList.toggle('master-admin',master);document.body.classList.toggle('system-paused-master',master&&isSystemPaused())}
+function syncMasterAdminUI(){const btn=$('systemPauseBtn'),settingsBtn=$('adminSettingsBtn'),master=isMasterAdmin();if(btn){btn.classList.toggle('hidden',!master);btn.classList.toggle('paused',isSystemPaused());const b=btn.querySelector('b'),sp=btn.querySelector('span');if(b)b.textContent=isSystemPaused()?'▶':'⏸';if(sp)sp.textContent=isSystemPaused()?'RESUME SYSTEM':'PAUSE SYSTEM'}settingsBtn?.classList.toggle('hidden',!master);document.body.classList.toggle('master-admin',master);document.body.classList.toggle('system-paused-master',master&&isSystemPaused());if(currentPage==='settings'&&master)renderAdminSettings()}
 function openMasterAdminLogin(){$('maintenanceScreen')?.classList.add('hidden');$('loginScreen')?.classList.remove('hidden');$('appRoot')?.classList.add('hidden');document.body.classList.remove('maintenance-active');const form=$('loginForm');if(form)form.dataset.mode='maintenance';const k=form?.querySelector('.kicker'),h=form?.querySelector('h1'),p=form?.querySelector('p:not(.form-error)');if(k)k.textContent='MASTER ADMIN ACCESS';if(h)h.innerHTML='SYSTEM<br><em>CONTROL.</em>';if(p)p.textContent='Maintenance aktif. Hanya master admin HDRG yang dapat masuk untuk mengaktifkan kembali sistem.';$('loginError').textContent='';setTimeout(()=>$('loginUser')?.focus(),120)}
-function toggleSystemPause(){if(!isMasterAdmin()){toast('Master admin only');return}if(isSystemPaused()){if(!confirm('Aktifkan kembali sistem untuk operator dan player?'))return;localStorage.removeItem(SYSTEM_PAUSE_KEY);syncMasterAdminUI();toast('System resumed')}else{if(!confirm('Pause system? Setelah logout atau refresh, user akan melihat System Maintenance.'))return;localStorage.setItem(SYSTEM_PAUSE_KEY,'1');stopAllGames();syncMasterAdminUI();toast('System paused — master admin tetap dapat mengakses sistem')}}
+function toggleSystemPause(){if(!isMasterAdmin()){toast('Master admin only');return}if(isSystemPaused()){if(!confirm('Aktifkan kembali sistem untuk operator dan player?'))return;localStorage.removeItem(SYSTEM_PAUSE_KEY);syncMasterAdminUI();toast('System resumed')}else{if(!confirm('Pause system? Setelah logout atau refresh, user akan melihat System Maintenance.'))return;localStorage.setItem(SYSTEM_PAUSE_KEY,'1');stopAllGames();syncMasterAdminUI();toast('System paused — master admin tetap dapat mengakses sistem')}renderAdminSettings()}
 function closeGameInfo(){const m=$('gameInfoModal');m?.classList.remove('show');setTimeout(()=>m?.classList.add('hidden'),220);pendingGameInfo=null}
 function confirmGameInfo(){const id=pendingGameInfo;if(!id)return;const m=$('gameInfoModal');m?.classList.remove('show');setTimeout(()=>m?.classList.add('hidden'),220);pendingGameInfo=null;setTimeout(()=>enterGame(id),100)}
 function showGameInfo(id){const info=GAME_INFO[id];if(!info){enterGame(id);return}pendingGameInfo=id;$('gameInfoKicker').textContent=info.kicker;$('gameInfoTitle').textContent=info.title;$('gameInfoDescription').textContent=info.description;$('gameInfoTips').innerHTML=info.tips.map(x=>'<span>'+esc(x)+'</span>').join('');const m=$('gameInfoModal');m?.classList.remove('hidden');requestAnimationFrame(()=>m?.classList.add('show'))}
@@ -42,7 +55,7 @@ let assetsPreloaded=false,faceMeshLibPromise=null,xlsxLibPromise=null;
 function preloadAssets(){
   if(assetsPreloaded)return;
   assetsPreloaded=true;
-  const list=[CFG.capture?.truckAsset,...Object.values(CAPTURE_TRUCK_ASSETS),CFG.memoryBack,...(CFG.capture?.fuel||[]).map(x=>x.src),...(CFG.capture?.nonFuel||[]).map(x=>x.src),...(CFG.memory||[]),...(CFG.catchGas?.good||[]).map(x=>x.src),...(CFG.catchGas?.bad||[]).map(x=>x.src)];
+  const list=[CFG.capture?.truckAsset,...Object.values(CAPTURE_TRUCK_ASSETS),CFG.memoryBack,CFG.memoryBlank,...(CFG.memoryRequired||[]),...(CFG.capture?.fuel||[]).map(x=>x.src),...(CFG.capture?.nonFuel||[]).map(x=>x.src),...(CFG.memory||[]),...(CFG.catchGas?.good||[]).map(x=>x.src),...(CFG.catchGas?.bad||[]).map(x=>x.src)];
   [...new Set(list.filter(Boolean))].forEach(src=>{const im=new Image();im.decoding='async';im.src=src;imageCache[src]=im});
 }
 function loadScriptOnce(src,id){
@@ -69,14 +82,50 @@ function syncHomeBackgroundVideo(play){
 function hideSplash(){const s=$('splash');if(!s)return;s.classList.add('splash-hide');setTimeout(()=>{s.remove();const authed=sessionStorage.getItem('pertaminaBoothAuth')==='1';if(isSystemPaused()&&!isMasterAdmin())showMaintenance();else if(authed)showApp();else showLogin()},720)}
 function showLogin(){syncHomeBackgroundVideo(false);$('maintenanceScreen')?.classList.add('hidden');$('loginScreen')?.classList.remove('hidden');$('appRoot')?.classList.add('hidden');document.body.classList.remove('maintenance-active');resetLoginCopy();setTimeout(()=>$('loginUser')?.focus(),150)}
 function showApp(){$('maintenanceScreen')?.classList.add('hidden');$('loginScreen')?.classList.add('hidden');$('appRoot')?.classList.remove('hidden');document.body.classList.remove('maintenance-active');restorePlayerForm();renderWordBank();prepareWordSearch();resetMemory();resetCatchGas();renderLeaderboard();showPage('home');syncMasterAdminUI();setTimeout(()=>syncHomeBackgroundVideo(true),80);setTimeout(preloadAssets,700)}
-function loginOperator(e){e?.preventDefault();const user=$('loginUser').value.trim().toLowerCase(),pin=$('loginPin').value.trim(),users=CFG.auth?.users||[{user:CFG.auth?.user,pin:CFG.auth?.pin}],valid=users.some(x=>String(x?.user||'').trim().toLowerCase()===user&&String(x?.pin||'').trim()===pin);if(valid&&isSystemPaused()&&user!=='hdrg'){$('loginError').textContent='System Maintenance aktif. Hanya master admin yang dapat masuk.';$('loginPin').value='';$('loginPin').focus();return false}if(valid){sessionStorage.setItem('pertaminaBoothAuth','1');sessionStorage.setItem(OPERATOR_USER_KEY,user);$('loginError').textContent='';showApp();toast(user==='hdrg'?'Master admin access granted':'Booth access granted');return false}else{$('loginError').textContent='User atau PIN tidak sesuai.';$('loginPin').value='';$('loginPin').focus();return false}}
+function loginOperator(e){e?.preventDefault();const user=$('loginUser').value.trim().toLowerCase(),pin=$('loginPin').value.trim(),account=getOperatorAccount(user),valid=!!account&&String(account.pin)===pin;if(valid&&isSystemPaused()&&user!=='hdrg'){$('loginError').textContent='System Maintenance aktif. Hanya master admin yang dapat masuk.';$('loginPin').value='';$('loginPin').focus();return false}if(valid){sessionStorage.setItem('pertaminaBoothAuth','1');sessionStorage.setItem(OPERATOR_USER_KEY,user);$('loginError').textContent='';showApp();toast(user==='hdrg'?'Master admin access granted':'Booth access granted');return false}else{$('loginError').textContent='User atau PIN tidak sesuai.';$('loginPin').value='';$('loginPin').focus();return false}}
 function logoutOperator(){if(!confirm('Keluar dari booth operator?'))return;stopAllGames();sessionStorage.removeItem('pertaminaBoothAuth');sessionStorage.removeItem(OPERATOR_USER_KEY);document.body.classList.remove('master-admin','system-paused-master');if(isSystemPaused())showMaintenance();else showLogin()}
 
 function setNavActive(id){document.querySelectorAll('.nav-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.page===id))}
-function showPage(id){if(id!==currentPage){if(currentPage==='capture')stopCamera();if(currentPage==='word')stopWordSearch(false);if(currentPage==='memory')stopMemory(false);if(currentPage==='catchgas')stopCatchGas()}currentPage=id;document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));setNavActive(id);syncHomeBackgroundVideo(id==='home');if(id==='leaderboard')renderLeaderboard();window.scrollTo({top:0,behavior:'smooth'})}
+function showPage(id){if(id==='settings'&&!isMasterAdmin()){toast('Master admin only');id='home'}if(id!==currentPage){if(currentPage==='capture')stopCamera();if(currentPage==='word')stopWordSearch(false);if(currentPage==='memory')stopMemory(false);if(currentPage==='catchgas')stopCatchGas()}currentPage=id;document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));setNavActive(id);syncHomeBackgroundVideo(id==='home');if(id==='leaderboard')renderLeaderboard();if(id==='settings')renderAdminSettings();window.scrollTo({top:0,behavior:'smooth'})}
 function enterGame(id){preloadAssets();if(id==='capture')resetCapture();if(id==='word')prepareWordSearch();if(id==='memory')resetMemory();if(id==='catchgas')resetCatchGas();showPage(id)}
 function openGame(id){if(!ensurePlayer())return;showGameInfo(id)}
 function stopAllGames(){stopCamera();stopWordSearch(false);stopMemory(false);stopCatchGas()}
+
+function openAdminSettings(){if(!isMasterAdmin()){toast('Master admin only');return}showPage('settings')}
+function renderAdminSettings(){
+  if(!isMasterAdmin())return;
+  const paused=isSystemPaused(),status=$('settingsSystemStatus'),btn=$('settingsPauseBtn');
+  if(status){status.textContent=paused?'PAUSED':'ACTIVE';status.classList.toggle('paused',paused)}
+  if(btn){btn.textContent=paused?'RESUME SYSTEM':'PAUSE SYSTEM';btn.classList.toggle('resume',paused)}
+  const list=$('operatorUserList');if(!list)return;
+  const accounts=getOperatorAccounts();
+  list.innerHTML=accounts.map(a=>{const master=String(a.user).toLowerCase()==='hdrg';return '<div class="operator-user-row"><div><b>'+esc(a.user)+'</b><span>'+(master?'MASTER ADMIN':'OPERATOR')+'</span></div>'+(master?'<em>PROTECTED</em>':'<button type="button" onclick="removeOperatorUser(\''+esc(a.user)+'\')">REMOVE</button>')+'</div>'}).join('');
+}
+function changeMasterPin(e){
+  e?.preventDefault();if(!isMasterAdmin()){toast('Master admin only');return false}
+  const current=$('currentMasterPin')?.value||'',next=$('newMasterPin')?.value||'',confirmPin=$('confirmMasterPin')?.value||'',accounts=getOperatorAccounts(),idx=accounts.findIndex(x=>String(x.user).toLowerCase()==='hdrg');
+  if(idx<0){toast('HDRG account tidak ditemukan');return false}
+  if(String(accounts[idx].pin)!==current){toast('Current PIN salah');return false}
+  if(!validPin(next)){toast('PIN baru harus 4–8 digit');return false}
+  if(next!==confirmPin){toast('Konfirmasi PIN tidak sama');return false}
+  accounts[idx].pin=next;saveOperatorAccounts(accounts);
+  $('currentMasterPin').value='';$('newMasterPin').value='';$('confirmMasterPin').value='';toast('HDRG PIN berhasil diubah');renderAdminSettings();return false;
+}
+function addOperatorUser(e){
+  e?.preventDefault();if(!isMasterAdmin()){toast('Master admin only');return false}
+  const name=($('newOperatorName')?.value||'').trim(),pin=$('newOperatorPin')?.value||'',key=name.toLowerCase();
+  if(name.length<2){toast('Username minimal 2 karakter');return false}
+  if(!validPin(pin)){toast('PIN harus 4–8 digit');return false}
+  const accounts=getOperatorAccounts();
+  if(accounts.some(x=>String(x.user).trim().toLowerCase()===key)){toast('Username sudah terdaftar');return false}
+  accounts.push({user:name,pin,role:'operator'});saveOperatorAccounts(accounts);
+  $('newOperatorName').value='';$('newOperatorPin').value='';toast('User baru ditambahkan');renderAdminSettings();return false;
+}
+function removeOperatorUser(name){
+  if(!isMasterAdmin())return;const key=String(name||'').toLowerCase();if(key==='hdrg'){toast('Master admin tidak dapat dihapus');return}
+  if(!confirm('Hapus user '+name+'?'))return;
+  saveOperatorAccounts(getOperatorAccounts().filter(x=>String(x.user).toLowerCase()!==key));toast('User dihapus');renderAdminSettings();
+}
 
 function contactMeta(type){return type==='email'?{label:'Email',placeholder:'nama@email.com',inputType:'email'}:type==='phone'?{label:'WhatsApp / Phone',placeholder:'08xx xxxx xxxx',inputType:'tel'}:{label:'Social Media',placeholder:'@username',inputType:'text'}}
 function updateContactField(){const meta=contactMeta($('contactType')?.value),input=$('contactValue');if(input){input.placeholder=meta.placeholder;input.type=meta.inputType}}
@@ -183,12 +232,43 @@ function finishWordSearch(completed){if(!word.running)return;word.running=false;
 function stopWordSearch(reset=false){clearInterval(word.timer);word.running=false;word.selecting=false;if(reset)prepareWordSearch()}
 
 /* ENERGY MEMORY */
-const memory={running:false,cards:[],first:null,lock:false,moves:0,matches:0,time:60,timer:null};
-function memoryCardMarkup(src,i){return `<button class="memory-card-btn" data-i="${i}" onclick="flipCard(${i})"><span class="memory-card-inner"><span class="memory-face memory-cover"><img src="${CFG.memoryBack}" alt="Pertamina Gas Negara"></span><span class="memory-face memory-product"><img src="${src}" alt="PGN gas product"></span></span></button>`}
-function resetMemory(){stopMemory(false);const base=CFG.memory||[];Object.assign(memory,{running:false,cards:shuffle([...base,...base]),first:null,lock:false,moves:0,matches:0,time:60});$('memoryMoves').textContent='00';$('memoryMatches').textContent='0';$('memoryTime').textContent='60';$('memoryBoard').innerHTML=memory.cards.map(memoryCardMarkup).join('');$('memoryResult').classList.add('hidden');$('memoryResult').innerHTML='';$('memoryStart').disabled=false;$('memoryStart').textContent='START GAME'}
+const memory={running:false,cards:[],roundBase:[],first:null,lock:false,moves:0,matches:0,time:60,timer:null};
+function memoryCardMarkup(src,i){
+  return `<button class="memory-card-btn" data-i="${i}" onclick="flipCard(${i})"><span class="memory-card-inner"><span class="memory-face memory-cover"><img class="memory-cover-art" src="${CFG.memoryBack}" alt="Card Cover"></span><span class="memory-face memory-product"><img class="memory-blank-bg" src="${CFG.memoryBlank}" alt=""><img class="memory-object" src="${src}" alt="Memory object"></span></span></button>`;
+}
+function selectMemoryPairs(){
+  const required=[...(CFG.memoryRequired||[])],pool=shuffle(CFG.memory||[]),count=Math.max(1,CFG.memoryPairCount||6),need=Math.max(0,count-required.length);
+  return [...required,...pool.slice(0,need)].slice(0,count);
+}
+function resetMemory(){
+  stopMemory(false);
+  const base=selectMemoryPairs();
+  Object.assign(memory,{running:false,roundBase:base,cards:shuffle([...base,...base]),first:null,lock:false,moves:0,matches:0,time:60});
+  $('memoryMoves').textContent='00';$('memoryMatches').textContent='0';$('memoryTime').textContent='60';
+  $('memoryBoard').innerHTML=memory.cards.map(memoryCardMarkup).join('');
+  $('memoryResult').classList.add('hidden');$('memoryResult').innerHTML='';$('memoryStart').disabled=false;$('memoryStart').textContent='START GAME';
+}
 function startMemory(){if(!ensurePlayer())return;resetMemory();memory.running=true;$('memoryStart').disabled=true;$('memoryStart').textContent='PLAYING';memory.timer=setInterval(()=>{memory.time--;$('memoryTime').textContent=memory.time;if(memory.time<=0)finishMemory(false)},1000)}
-function flipCard(i){if(!memory.running||memory.lock)return;const el=document.querySelector(`.memory-card-btn[data-i="${i}"]`);if(!el||el.classList.contains('flipped')||el.classList.contains('matched'))return;el.classList.add('flipped');if(memory.first===null){memory.first=i;return}const j=memory.first;memory.first=null;memory.moves++;$('memoryMoves').textContent=String(memory.moves).padStart(2,'0');const prev=document.querySelector(`.memory-card-btn[data-i="${j}"]`);if(memory.cards[i]===memory.cards[j]){el.classList.add('matched');prev?.classList.add('matched');memory.matches++;$('memoryMatches').textContent=memory.matches;if(memory.matches===(CFG.memory||[]).length)finishMemory(true)}else{memory.lock=true;setTimeout(()=>{el.classList.remove('flipped');prev?.classList.remove('flipped');memory.lock=false},650)}}
-function finishMemory(completed){if(!memory.running)return;memory.running=false;clearInterval(memory.timer);const base=(CFG.memory||[]).length,score=Math.max(0,memory.matches*100+memory.time*4-Math.max(0,memory.moves-base)*5);saveScore('Energy Memory',score);$('memoryStart').disabled=false;$('memoryStart').textContent='PLAY AGAIN';$('memoryResult').classList.remove('hidden');$('memoryResult').innerHTML=`<b>${completed?'ALL PAIRS FOUND':'TIME UP'}</b><span>SCORE ${score}</span>`}
+function flipCard(i){
+  if(!memory.running||memory.lock)return;
+  const el=document.querySelector(`.memory-card-btn[data-i="${i}"]`);if(!el||el.classList.contains('flipped')||el.classList.contains('matched'))return;
+  el.classList.add('flipped');
+  if(memory.first===null){memory.first=i;return}
+  const j=memory.first;memory.first=null;memory.moves++;$('memoryMoves').textContent=String(memory.moves).padStart(2,'0');
+  const prev=document.querySelector(`.memory-card-btn[data-i="${j}"]`);
+  if(memory.cards[i]===memory.cards[j]){
+    el.classList.add('matched');prev?.classList.add('matched');memory.matches++;$('memoryMatches').textContent=memory.matches;
+    if(memory.matches===memory.roundBase.length)finishMemory(true);
+  }else{
+    memory.lock=true;setTimeout(()=>{el.classList.remove('flipped');prev?.classList.remove('flipped');memory.lock=false},650);
+  }
+}
+function finishMemory(completed){
+  if(!memory.running)return;memory.running=false;clearInterval(memory.timer);
+  const base=memory.roundBase.length||CFG.memoryPairCount||6,score=Math.max(0,memory.matches*100+memory.time*4-Math.max(0,memory.moves-base)*5);
+  saveScore('Energy Memory',score);$('memoryStart').disabled=false;$('memoryStart').textContent='PLAY AGAIN';
+  $('memoryResult').classList.remove('hidden');$('memoryResult').innerHTML=`<b>${completed?'ALL PAIRS FOUND':'TIME UP'}</b><span>SCORE ${score}</span>`;
+}
 function stopMemory(){clearInterval(memory.timer);memory.running=false}
 
 /* CATCH THE GAS — touchscreen + mouse reaction game */
@@ -324,6 +404,7 @@ async function exportPlayerData(){
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
+  getOperatorAccounts();
   if(sessionStorage.getItem('pertaminaBoothAuth')==='1'&&!sessionStorage.getItem(OPERATOR_USER_KEY))sessionStorage.setItem(OPERATOR_USER_KEY,'89 pro');
   syncMasterAdminUI();
   $('gameInfoModal')?.addEventListener('click',e=>{if(e.target?.id==='gameInfoModal')closeGameInfo()});
