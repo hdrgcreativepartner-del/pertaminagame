@@ -10,11 +10,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style-v3.css">
-  <link rel="stylesheet" href="booth-rev5.css?v=20261003-pgn-r25">
-  <link rel="stylesheet" href="booth-rev7.css?v=20261003-pgn-r25">
-  <link rel="stylesheet" href="pgn-rebrand.css?v=20261003-pgn-r25">
-  <link rel="stylesheet" href="catchgas-responsive.css?v=20261003-pgn-r25">
-  <link rel="stylesheet" href="master-admin-ui.css?v=20261003-pgn-r25">
+  <link rel="stylesheet" href="booth-rev5.css?v=20261003-pgn-r26">
+  <link rel="stylesheet" href="booth-rev7.css?v=20261003-pgn-r26">
+  <link rel="stylesheet" href="pgn-rebrand.css?v=20261003-pgn-r26">
+  <link rel="stylesheet" href="catchgas-responsive.css?v=20261003-pgn-r26">
+  <link rel="stylesheet" href="master-admin-ui.css?v=20261003-pgn-r26">
 </head>
 <body>
   <div id="splash" class="splash" aria-label="Pertamina Gas Negara">
@@ -302,10 +302,21 @@
         </div>
 
         <div class="settings-shell">
+          <form id="githubTokenForm" class="settings-card github-control-card" onsubmit="connectGitHubAdmin(event)">
+            <span class="kicker">GITHUB CONTROL</span>
+            <h3>Connect repository</h3>
+            <p>Masukkan Fine-grained GitHub token dengan akses <b>Contents: Read and write</b> hanya untuk repository ini. Token tidak disimpan dan akan hilang saat tab ditutup/refresh.</p>
+            <label>GITHUB TOKEN<input id="githubAdminTokenInput" type="password" autocomplete="off" placeholder="github_pat_••••••••" required></label>
+            <div class="github-connect-row">
+              <button class="primary-btn" type="submit">CONNECT GITHUB</button>
+              <span id="githubConnectionStatus" class="github-connection-status">NOT CONNECTED</span>
+            </div>
+          </form>
+
           <div class="settings-card settings-system">
             <span class="kicker">SYSTEM CONTROL</span>
             <h3>Booth availability</h3>
-            <p>Pause akan menampilkan halaman System Maintenance setelah splash. Resume mengaktifkan kembali akses operator.</p>
+            <p>Pause/Resume disimpan ke repository sebagai state global. Semua device membaca status ini setelah splash dan saat aplikasi aktif.</p>
             <button id="settingsPauseBtn" class="primary-btn" onclick="toggleSystemPause()">PAUSE SYSTEM</button>
           </div>
 
@@ -320,7 +331,7 @@
 
           <form class="settings-card" onsubmit="addOperatorUser(event)">
             <span class="kicker">USER MANAGEMENT</span>
-            <h3>Add booth user</h3>
+            <h3>Add global booth user</h3>
             <label>USERNAME<input id="newOperatorName" maxlength="30" autocomplete="off" required></label>
             <label>PIN<input id="newOperatorPin" type="password" inputmode="numeric" minlength="4" maxlength="8" required></label>
             <button class="primary-btn" type="submit">ADD USER</button>
@@ -365,9 +376,9 @@
   </div>
 
   <div id="toast" class="toast"></div>
-  <script src="game-config.js?v=20261003-pgn-r25"></script>
-  <script src="app.js?v=20261003-pgn-r25"></script>
-  <script src="booth-rev5.js?v=20261003-pgn-r25"></script>
-  <script src="booth-rev7.js?v=20261003-pgn-r25"></script>
+  <script src="game-config.js?v=20261003-pgn-r26"></script>
+  <script src="app.js?v=20261003-pgn-r26"></script>
+  <script src="booth-rev5.js?v=20261003-pgn-r26"></script>
+  <script src="booth-rev7.js?v=20261003-pgn-r26"></script>
 </body>
 </html>
