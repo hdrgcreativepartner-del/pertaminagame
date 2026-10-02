@@ -10,11 +10,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style-v3.css">
-  <link rel="stylesheet" href="booth-rev5.css?v=20261001-pgn-r22">
-  <link rel="stylesheet" href="booth-rev7.css?v=20261001-pgn-r22">
-  <link rel="stylesheet" href="pgn-rebrand.css?v=20261001-pgn-r22">
-  <link rel="stylesheet" href="catchgas-responsive.css?v=20261001-pgn-r22">
-  <link rel="stylesheet" href="master-admin-ui.css?v=20261001-pgn-r22">
+  <link rel="stylesheet" href="booth-rev5.css?v=20261003-pgn-r23">
+  <link rel="stylesheet" href="booth-rev7.css?v=20261003-pgn-r23">
+  <link rel="stylesheet" href="pgn-rebrand.css?v=20261003-pgn-r23">
+  <link rel="stylesheet" href="catchgas-responsive.css?v=20261003-pgn-r23">
+  <link rel="stylesheet" href="master-admin-ui.css?v=20261003-pgn-r23">
 </head>
 <body>
   <div id="splash" class="splash" aria-label="Pertamina Gas Negara">
@@ -82,6 +82,7 @@
         <button data-page="leaderboard" onclick="showPage('leaderboard')"><b>♛</b><span>Leaderboard</span></button>
       </nav>
       <div class="header-actions">
+        <button id="adminSettingsBtn" class="header-btn admin-only hidden" onclick="openAdminSettings()" title="Admin settings"><b>⚙</b><span>SETTINGS</span></button>
         <button id="systemPauseBtn" class="header-btn system-pause admin-only hidden" onclick="toggleSystemPause()" title="Pause system"><b>⏸</b><span>PAUSE SYSTEM</span></button>
         <button class="header-btn export" onclick="exportPlayerData()" title="Download player data"><span>XLSX</span></button>
         <button class="header-btn" onclick="toggleFullscreen()" title="Fullscreen"><b>⛶</b><span>FULLSCREEN</span></button>
@@ -121,7 +122,7 @@
 
           <div class="home-visual" aria-label="Interactive truck features">
             <div class="hero-video-disc">
-              <video id="homeBgVideo" class="home-bg-video" data-src="asset/truck gas pertamina as bg.mp4" muted loop playsinline preload="none" aria-hidden="true"></video>
+              <video id="homeBgVideo" class="home-bg-video" data-src="asset/truck gas pertamina as bg v2.mp4" muted loop playsinline preload="none" aria-hidden="true"></video>
             </div>
             <div class="hero-ring ring-a"></div>
             <div class="hero-ring ring-b"></div>
@@ -226,12 +227,12 @@
       <section id="memory" class="page game-page memory-page">
         <div class="game-titlebar">
           <button class="back-btn" onclick="showPage('home')">← HOME</button>
-          <div><span class="kicker">03 / ENERGY MEMORY</span><h2>MATCH THE GAS PRODUCTS.</h2></div>
+          <div><span class="kicker">03 / ENERGY MEMORY</span><h2>MATCH THE OBJECTS.</h2></div>
           <button id="memoryStart" class="primary-btn compact" onclick="startMemory()">START GAME</button>
         </div>
         <div class="memory-shell">
-          <div class="memory-brand"><img src="asset/Pertamina Gas Negara logo.png" alt="Pertamina Gas Negara"><div><b>PGN GAS MEMORY</b><span>Cocokkan pasangan GasKita, GasKu, GasLine, GasLink, dan Bright Gas</span></div></div>
-          <div class="memory-stats"><div><span>TIME</span><b><strong id="memoryTime">60</strong>s</b></div><div><span>MOVES</span><b id="memoryMoves">00</b></div><div><span>MATCHES</span><b><strong id="memoryMatches">0</strong>/5</b></div></div>
+          <div class="memory-brand"><img src="asset/Pertamina Gas Negara logo.png" alt="Pertamina Gas Negara"><div><b>PGN MEMORY CHALLENGE</b><span>Cocokkan logo produk gas dan ikon kota Surabaya</span></div></div>
+          <div class="memory-stats"><div><span>TIME</span><b><strong id="memoryTime">60</strong>s</b></div><div><span>MOVES</span><b id="memoryMoves">00</b></div><div><span>MATCHES</span><b><strong id="memoryMatches">0</strong>/6</b></div></div>
           <div id="memoryBoard" class="memory-board"></div>
           <div id="memoryResult" class="memory-result hidden"></div>
         </div>
@@ -292,6 +293,47 @@
         </div>
       </section>
 
+
+      <section id="settings" class="page game-page settings-page">
+        <div class="game-titlebar">
+          <button class="back-btn" onclick="showPage('home')">← HOME</button>
+          <div><span class="kicker">MASTER ADMIN</span><h2>SYSTEM SETTINGS.</h2></div>
+          <div class="score-pill"><span>STATUS</span><b id="settingsSystemStatus">ACTIVE</b></div>
+        </div>
+
+        <div class="settings-shell">
+          <div class="settings-card settings-system">
+            <span class="kicker">SYSTEM CONTROL</span>
+            <h3>Booth availability</h3>
+            <p>Pause akan menampilkan halaman System Maintenance setelah splash. Resume mengaktifkan kembali akses operator.</p>
+            <button id="settingsPauseBtn" class="primary-btn" onclick="toggleSystemPause()">PAUSE SYSTEM</button>
+          </div>
+
+          <form class="settings-card" onsubmit="changeMasterPin(event)">
+            <span class="kicker">MASTER SECURITY</span>
+            <h3>Change HDRG PIN</h3>
+            <label>CURRENT PIN<input id="currentMasterPin" type="password" inputmode="numeric" autocomplete="current-password" required></label>
+            <label>NEW PIN<input id="newMasterPin" type="password" inputmode="numeric" minlength="4" maxlength="8" required></label>
+            <label>CONFIRM NEW PIN<input id="confirmMasterPin" type="password" inputmode="numeric" minlength="4" maxlength="8" required></label>
+            <button class="primary-btn" type="submit">UPDATE PIN</button>
+          </form>
+
+          <form class="settings-card" onsubmit="addOperatorUser(event)">
+            <span class="kicker">USER MANAGEMENT</span>
+            <h3>Add booth user</h3>
+            <label>USERNAME<input id="newOperatorName" maxlength="30" autocomplete="off" required></label>
+            <label>PIN<input id="newOperatorPin" type="password" inputmode="numeric" minlength="4" maxlength="8" required></label>
+            <button class="primary-btn" type="submit">ADD USER</button>
+          </form>
+
+          <div class="settings-card settings-users-card">
+            <span class="kicker">AUTHORIZED USERS</span>
+            <h3>Operator accounts</h3>
+            <div id="operatorUserList" class="operator-user-list"></div>
+          </div>
+        </div>
+      </section>
+
       <section id="leaderboard" class="page leaderboard-page">
         <div class="leader-shell">
           <div class="leader-head">
@@ -323,9 +365,9 @@
   </div>
 
   <div id="toast" class="toast"></div>
-  <script src="game-config.js?v=20261001-pgn-r22"></script>
-  <script src="app.js?v=20261001-pgn-r22"></script>
-  <script src="booth-rev5.js?v=20261001-pgn-r22"></script>
-  <script src="booth-rev7.js?v=20261001-pgn-r22"></script>
+  <script src="game-config.js?v=20261003-pgn-r23"></script>
+  <script src="app.js?v=20261003-pgn-r23"></script>
+  <script src="booth-rev5.js?v=20261003-pgn-r23"></script>
+  <script src="booth-rev7.js?v=20261003-pgn-r23"></script>
 </body>
 </html>
