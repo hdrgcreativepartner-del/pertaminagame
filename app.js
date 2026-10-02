@@ -199,7 +199,7 @@ async function loginOperator(e){
   }
   if(valid){
     sessionStorage.setItem('pertaminaBoothAuth','1');sessionStorage.setItem(OPERATOR_USER_KEY,user);
-    $('loginError').textContent='';showApp();toast(user==='hdrg'?'Master admin access granted':'Booth access granted');return false;
+    $('loginError').textContent='';showApp();if(user==='hdrg')setTimeout(()=>showPage('settings'),80);toast(user==='hdrg'?'Master admin access granted':'Booth access granted');return false;
   }
   $('loginError').textContent='User atau PIN tidak sesuai.';$('loginPin').value='';$('loginPin').focus();return false;
 }
