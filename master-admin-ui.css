@@ -864,3 +864,25 @@ button,input,select{touch-action:manipulation}
   #memory .memory-board{padding:6px 5px 9px!important}
   #memory .memory-object{max-width:48%!important;max-height:48%!important}
 }
+
+
+/* MEMORY DIRECT CARD ART */
+#memory .memory-product-direct{
+  display:block!important;
+  padding:0!important;
+  background:transparent!important;
+}
+#memory .memory-direct-art{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  transform:translate(-50%,-50%)!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  margin:0!important;
+  filter:none!important;
+}
