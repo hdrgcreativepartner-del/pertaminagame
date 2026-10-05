@@ -401,7 +401,11 @@ function stopWordSearch(reset=false){clearInterval(word.timer);word.running=fals
 /* ENERGY MEMORY */
 const memory={running:false,cards:[],roundBase:[],first:null,lock:false,moves:0,matches:0,time:60,timer:null};
 function memoryCardMarkup(src,i){
-  return `<button class="memory-card-btn" data-i="${i}" onclick="flipCard(${i})"><span class="memory-card-inner"><span class="memory-face memory-cover"><img class="memory-cover-art" src="${CFG.memoryBack}" alt="Card Cover"></span><span class="memory-face memory-product"><img class="memory-blank-bg" src="${CFG.memoryBlank}" alt=""><img class="memory-object" src="${src}" alt="Memory object"></span></span></button>`;
+  const direct=(CFG.memoryDirectCards||[]).includes(src);
+  const back=direct
+    ? `<span class="memory-face memory-product memory-product-direct"><img class="memory-direct-art" src="${src}" alt="Memory card object"></span>`
+    : `<span class="memory-face memory-product"><img class="memory-blank-bg" src="${CFG.memoryBlank}" alt=""><img class="memory-object" src="${src}" alt="Memory object"></span>`;
+  return `<button class="memory-card-btn" data-i="${i}" onclick="flipCard(${i})"><span class="memory-card-inner"><span class="memory-face memory-cover"><img class="memory-cover-art" src="${CFG.memoryBack}" alt="Card Cover"></span>${back}</span></button>`;
 }
 function selectMemoryPairs(){
   const required=[...(CFG.memoryRequired||[])],pool=shuffle(CFG.memory||[]),count=Math.max(1,CFG.memoryPairCount||6),need=Math.max(0,count-required.length);
