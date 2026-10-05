@@ -21,7 +21,6 @@ window.EVENT_CONFIG={
       {src:'asset/Logo Produk PGN • GasKu.png',label:'GASKU',points:25},
       {src:'asset/Logo Produk PGN • GasLine.png',label:'GASLINE',points:30},
       {src:'asset/Logo Produk PGN • GasLink.png',label:'GASLINK',points:35},
-      {src:'asset/Bright Gas.png',label:'BRIGHT GAS',points:28}
     ],
     nonFuel:[
       {src:'asset/pertalite-card.png',label:'PERTALITE',points:-15},
@@ -44,7 +43,6 @@ window.EVENT_CONFIG={
       {src:'asset/Logo Produk PGN • GasKu.png',label:'GASKU',points:25},
       {src:'asset/Logo Produk PGN • GasLine.png',label:'GASLINE',points:30},
       {src:'asset/Logo Produk PGN • GasLink.png',label:'GASLINK',points:35},
-      {src:'asset/Bright Gas.png',label:'BRIGHT GAS',points:28}
     ],
     bad:[
       {src:'asset/pertalite-card.png',label:'PERTALITE',points:-15},
@@ -60,18 +58,18 @@ window.EVENT_CONFIG={
     size:12,
     duration:120,
     maxWords:6,
-    defaultWords:['PGN','GASKITA','GASKU','GASLINE','GASLINK','BRIGHTGAS','GASBUMI','ENERGI','JARINGAN','PELANGGAN']
+    defaultWords:['PGN','GASKITA','GASKU','GASLINE','GASLINK','GASBUMI','ENERGI','JARINGAN','PELANGGAN']
   },
   memory:[
     'asset/Logo Produk PGN • GasKita.png',
     'asset/Logo Produk PGN • GasKu.png',
     'asset/Logo Produk PGN • GasLine.png',
     'asset/Logo Produk PGN • GasLink.png',
-    'asset/Bright Gas.png'
   ],
   memoryRequired:[
     'asset/Subaya icon.png',
-    'asset/Tugu Pahlawan icon.png'
+    'asset/Tugu Pahlawan icon.png',
+    'asset/Advancing & rising in unity.png'
   ],
   memoryPairCount:6,
   memoryBack:'asset/Card Cover.png',
