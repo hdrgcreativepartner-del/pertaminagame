@@ -67,9 +67,13 @@ window.EVENT_CONFIG={
     'asset/Logo Produk PGN • GasLink.png',
   ],
   memoryRequired:[
-    'asset/Subaya icon.png',
-    'asset/Tugu Pahlawan icon.png',
+    'asset/Card Game - Icon Surabaya.png',
+    'asset/Card Game - Tugu Pahlawan.png',
     'asset/Advancing & rising in unity.png'
+  ],
+  memoryDirectCards:[
+    'asset/Card Game - Icon Surabaya.png',
+    'asset/Card Game - Tugu Pahlawan.png'
   ],
   memoryPairCount:6,
   memoryBack:'asset/Card Cover.png',
