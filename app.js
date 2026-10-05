@@ -17,7 +17,7 @@ if(CFG.capture)CFG.capture.truckAsset=CAPTURE_TRUCK_ASSETS.center;
 
 const GAME_INFO={
   word:{kicker:'01 / ENERGY WORD',title:'FIND THE WORDS',description:'Temukan kata-kata yang berkaitan dengan PGN dan energi gas di dalam susunan huruf. Hubungkan huruf menggunakan sentuhan atau mouse dan selesaikan sebanyak mungkin sebelum waktu habis.',tips:['Kiri → kanan','Atas → bawah','120 detik']},
-  capture:{kicker:'02 / CAPTURE ENERGY',title:'CAPTURE THE GAS',description:'Gerakkan kepala ke kiri, tengah, atau kanan untuk mengendalikan Truck Gas PGN. Tangkap GasKita, GasKu, GasLine, GasLink, dan Bright Gas untuk mendapat poin. Hindari produk BBM karena akan mengurangi skor.',tips:['Head tracking','Gas = + score','Fuel = − score']},
+  capture:{kicker:'02 / CAPTURE ENERGY',title:'CAPTURE THE GAS',description:'Gerakkan kepala ke kiri, tengah, atau kanan untuk mengendalikan Truck Gas PGN. Tangkap GasKita, GasKu, GasLine, GasLink untuk mendapat poin. Hindari produk BBM karena akan mengurangi skor.',tips:['Head tracking','Gas = + score','Fuel = − score']},
   memory:{kicker:'03 / ENERGY MEMORY',title:'MATCH THE OBJECTS',description:'Ingat posisi kartu dan temukan pasangan logo produk gas serta ikon kota Surabaya. Card Cover akan terbuka menjadi objek di atas Card Blank. Cocokkan 6 pasangan sebelum waktu habis.',tips:['12 kartu','6 pairs','60 detik']},
   catchgas:{kicker:'04 / CATCH THE GAS',title:'TOUCH. REACT. SCORE.',description:'Uji kecepatan reaksimu. Sentuh atau klik produk gas PGN yang muncul untuk mendapatkan poin. Hindari produk BBM Pertamina karena setiap salah sentuh akan mengurangi skor.',tips:['Touchscreen + mouse','Gas = + score','Fuel = − score']}
 };
