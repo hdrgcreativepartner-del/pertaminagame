@@ -150,7 +150,7 @@
     const instruction=document.querySelector('.word-instruction');
     if(instruction)instruction.textContent='TEKA-TEKI SILANG HURUF — cari kata hanya dari kiri ke kanan atau dari atas ke bawah. Touch / click lalu drag.';
     const wordSmall=document.querySelector('.game-picker button:nth-child(1) small');if(wordSmall)wordSmall.textContent='Find PGN gas words';
-    const captureText=document.querySelector('#cameraPrompt p');if(captureText)captureText.textContent='Gerakkan kepala untuk mengarahkan truk. Tangkap GasKita, GasKu, GasLine, GasLink, dan Bright Gas. Hindari produk BBM Pertamina karena mengurangi score. Saat mulai, track otomatis fullscreen.';
+    const captureText=document.querySelector('#cameraPrompt p');if(captureText)captureText.textContent='Gerakkan kepala untuk mengarahkan truk. Tangkap GasKita, GasKu, GasLine, GasLink. Hindari produk BBM Pertamina karena mengurangi score. Saat mulai, track otomatis fullscreen.';
     const captureTitle=document.querySelector('#cameraPrompt h3');if(captureTitle)captureTitle.innerHTML='MOVE YOUR HEAD.<br><em>CAPTURE THE GAS.</em>';
   }
 
