@@ -224,6 +224,10 @@ async function loginOperator(e){
 }
 function logoutOperator(){if(!confirm('Keluar dari booth operator?'))return;stopAllGames();clearRemoteWatch();githubAdminToken='';githubWriteReady=false;sessionStorage.removeItem('pertaminaBoothAuth');sessionStorage.removeItem(OPERATOR_USER_KEY);document.body.classList.remove('master-admin','system-paused-master');if(isSystemPaused())showMaintenance();else showLogin()}
 
+function applyFeatureFlags(){
+  const showCatchGas=CFG.features?.catchGas===true;
+  document.querySelectorAll('[data-feature="catchGas"]').forEach(el=>el.classList.toggle('hidden',!showCatchGas));
+}
 function setNavActive(id){document.querySelectorAll('.nav-tabs button').forEach(b=>b.classList.toggle('active',b.dataset.page===id))}
 function showPage(id){if(id==='settings'&&!isMasterAdmin()){toast('Master admin only');id='home'}if(id!==currentPage){if(currentPage==='capture')stopCamera();if(currentPage==='word')stopWordSearch(false);if(currentPage==='memory')stopMemory(false);if(currentPage==='catchgas')stopCatchGas()}currentPage=id;document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===id));setNavActive(id);syncHomeBackgroundVideo(id==='home');if(id==='leaderboard')renderLeaderboard();if(id==='settings')renderAdminSettings();window.scrollTo({top:0,behavior:'smooth'})}
 function enterGame(id){preloadAssets();if(id==='capture')resetCapture();if(id==='word')prepareWordSearch();if(id==='memory')resetMemory();if(id==='catchgas')resetCatchGas();showPage(id)}
@@ -575,6 +579,7 @@ async function exportPlayerData(){
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
+  applyFeatureFlags();
   if(sessionStorage.getItem('pertaminaBoothAuth')==='1'&&!sessionStorage.getItem(OPERATOR_USER_KEY))sessionStorage.setItem(OPERATOR_USER_KEY,'89 pro');
   syncMasterAdminUI();
   $('gameInfoModal')?.addEventListener('click',e=>{if(e.target?.id==='gameInfoModal')closeGameInfo()});
