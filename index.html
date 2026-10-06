@@ -10,11 +10,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style-v3.css">
-  <link rel="stylesheet" href="booth-rev5.css?v=20261005-pgn-r31">
-  <link rel="stylesheet" href="booth-rev7.css?v=20261005-pgn-r31">
-  <link rel="stylesheet" href="pgn-rebrand.css?v=20261005-pgn-r31">
-  <link rel="stylesheet" href="catchgas-responsive.css?v=20261005-pgn-r31">
-  <link rel="stylesheet" href="master-admin-ui.css?v=20261005-pgn-r31">
+  <link rel="stylesheet" href="booth-rev5.css?v=20261006-pgn-r32">
+  <link rel="stylesheet" href="booth-rev7.css?v=20261006-pgn-r32">
+  <link rel="stylesheet" href="pgn-rebrand.css?v=20261006-pgn-r32">
+  <link rel="stylesheet" href="catchgas-responsive.css?v=20261006-pgn-r32">
+  <link rel="stylesheet" href="master-admin-ui.css?v=20261006-pgn-r32">
 </head>
 <body>
   <div id="splash" class="splash" aria-label="Pertamina Gas Negara">
@@ -78,7 +78,7 @@
         <button data-page="word" onclick="openGame('word')"><b>⌕</b><span>Energy Word</span></button>
         <button data-page="capture" onclick="openGame('capture')"><b>◉</b><span>Capture Energy</span></button>
         <button data-page="memory" onclick="openGame('memory')"><b>▦</b><span>Energy Memory</span></button>
-        <button data-page="catchgas" onclick="openGame('catchgas')"><b>✦</b><span>Catch The Gas</span></button>
+        <button data-feature="catchGas" data-page="catchgas" onclick="openGame('catchgas')"><b>✦</b><span>Catch The Gas</span></button>
         <button data-page="leaderboard" onclick="showPage('leaderboard')"><b>♛</b><span>Leaderboard</span></button>
       </nav>
       <div class="header-actions">
@@ -142,7 +142,7 @@
           <button onclick="openGame('word')"><span>01</span><div><b>ENERGY WORD</b><small>Find PGN gas words</small></div><i>→</i></button>
           <button onclick="openGame('capture')"><span>02</span><div><b>CAPTURE ENERGY</b><small>Catch PGN gas products</small></div><i>→</i></button>
           <button onclick="openGame('memory')"><span>03</span><div><b>ENERGY MEMORY</b><small>Match PGN gas products</small></div><i>→</i></button>
-          <button onclick="openGame('catchgas')"><span>04</span><div><b>CATCH THE GAS</b><small>Touch / click reaction game</small></div><i>→</i></button>
+          <button data-feature="catchGas" onclick="openGame('catchgas')"><span>04</span><div><b>CATCH THE GAS</b><small>Touch / click reaction game</small></div><i>→</i></button>
           <button onclick="showPage('leaderboard')"><span>05</span><div><b>LEADERBOARD</b><small>Top booth players</small></div><i>→</i></button>
         </div>
       </section>
@@ -239,7 +239,7 @@
       </section>
 
 
-      <section id="catchgas" class="page game-page catchgas-page">
+      <section id="catchgas" class="page game-page catchgas-page" data-feature="catchGas">
         <div class="game-titlebar">
           <button class="back-btn" onclick="showPage('home')">← HOME</button>
           <div><span class="kicker">04 / TOUCH GAME</span><h2>CATCH THE GAS.</h2></div>
@@ -376,9 +376,9 @@
   </div>
 
   <div id="toast" class="toast"></div>
-  <script src="game-config.js?v=20261005-pgn-r31"></script>
-  <script src="app.js?v=20261005-pgn-r31"></script>
-  <script src="booth-rev5.js?v=20261005-pgn-r31"></script>
-  <script src="booth-rev7.js?v=20261005-pgn-r31"></script>
+  <script src="game-config.js?v=20261006-pgn-r32"></script>
+  <script src="app.js?v=20261006-pgn-r32"></script>
+  <script src="booth-rev5.js?v=20261006-pgn-r32"></script>
+  <script src="booth-rev7.js?v=20261006-pgn-r32"></script>
 </body>
 </html>
