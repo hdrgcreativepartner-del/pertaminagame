@@ -1,6 +1,7 @@
 window.EVENT_CONFIG={
   brandName:'PERTAMINA GAS NEGARA',
   eventLabel:'GAS ENERGY EXPERIENCE',
+  features:{catchGas:false},
   palette:{black:'#0B0A08',red:'#E9313A',blue:'#0879BE',lime:'#B7D322',gray:'#BBBBBB',white:'#FFFFFF'},
   splash:{asset:'asset/Pertamina Gas Negara logo.png',partnerAsset:'asset/Danantara_Indonesia logo.png',duration:1800},
   auth:{
