@@ -355,8 +355,8 @@ function captureWaveGap(){
 }
 function captureObjectSpeed(){
   const p=captureDifficultyProgress();
-  const base=captureLerp(CFG.capture?.speedStart??.00315,CFG.capture?.speedEnd??.00510,p);
-  const jitter=captureLerp(CFG.capture?.speedJitterStart??.00075,CFG.capture?.speedJitterEnd??.00100,p);
+  const eased=p*p*(3-2*p);const base=captureLerp(CFG.capture?.speedStart??.00365,CFG.capture?.speedEnd??.00685,eased);
+  const jitter=captureLerp(CFG.capture?.speedJitterStart??.00090,CFG.capture?.speedJitterEnd??.00135,eased);
   return base+Math.random()*jitter;
 }
 function spawnWave(){const fuel=CFG.capture?.fuel||[],bad=CFG.capture?.nonFuel||[];if(!fuel.length&&!bad.length)return;const badChance=bad.length?(CFG.capture?.nonFuelChance??.34):0,lanes=shuffle([0,1,2]),progress=captureDifficultyProgress(),count=Math.random()<(0.62+progress*.26)?2:1;for(let i=0;i<count;i++){const isBad=Math.random()<badChance,pool=isBad?bad:fuel,item=pool[Math.floor(Math.random()*pool.length)];if(!item)continue;capture.objects.push({lane:lanes[i],y:-.10,speed:captureObjectSpeed(),item,bad:isBad,rot:(Math.random()-.5)*.035})}}
