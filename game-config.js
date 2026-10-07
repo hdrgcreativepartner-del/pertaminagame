@@ -14,8 +14,14 @@ window.EVENT_CONFIG={
   },
   capture:{
     duration:45,
-    spawnEvery:1250,
-    minWaveGap:.30,
+    spawnEveryStart:1250,
+    spawnEveryEnd:680,
+    minWaveGapStart:.30,
+    minWaveGapEnd:.12,
+    speedStart:.00315,
+    speedEnd:.00510,
+    speedJitterStart:.00075,
+    speedJitterEnd:.00100,
     nonFuelChance:.42,
     truckAsset:'asset/Truck Tanki.png',
     fuel:[
