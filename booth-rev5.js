@@ -95,7 +95,7 @@
       const lanes=shuffle([0,1,2]),progress=typeof captureDifficultyProgress==='function'?captureDifficultyProgress():0,count=Math.random()<(0.62+progress*.26)?2:1;
       for(let i=0;i<count;i++){
         const isBad=Math.random()<(CFG.capture?.nonFuelChance??.34),pool=isBad?bad:fuel,item=pool[Math.floor(Math.random()*pool.length)];
-        capture.objects.push({lane:lanes[i],y:-.10,speed:typeof captureObjectSpeed==='function'?captureObjectSpeed():.00315+Math.random()*.00075,item,bad:isBad,rot:(Math.random()-.5)*.025});
+        capture.objects.push({lane:lanes[i],y:-.10,speed:typeof captureObjectSpeed==='function'?captureObjectSpeed():.00365+Math.random()*.00090,item,bad:isBad,rot:(Math.random()-.5)*.025});
       }
     };
 
